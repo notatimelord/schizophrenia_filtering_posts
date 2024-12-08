@@ -5,6 +5,7 @@ library(stringr)
 if (!require(igraph)) install.packages("igraph", dependencies = TRUE)
 library(igraph)
 
+# Define the keyword categories
 keywords <- list(
   depressed = c("depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", 
                 "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", 
@@ -60,21 +61,23 @@ keywords <- list(
 
 # Function to count keywords in a post
 count_keywords_in_post <- function(post, keyword_list) {
-  # Ensure the post is a character and convert it to UTF-8 encoding
   post_text <- iconv(as.character(post), to = "UTF-8", sub = "byte")  # Convert to UTF-8 encoding
   post_text <- tolower(post_text)  # Convert to lowercase
-
+  
   # Avoid issues with NA values by checking if post_text is not empty
   if (is.na(post_text) || post_text == "") {
     return(FALSE)
   }
-
+  
   # Check if any of the keywords match
   matches <- sapply(keyword_list, function(keyword) {
     grepl(keyword, post_text, fixed = TRUE)  # Match keywords exactly
   })
   return(any(matches))
 }
+
+# Create all possible keyword pairs
+keyword_pairs <- combn(names(keywords), 2, simplify = FALSE)
 
 # Initialize results dataframe
 results <- data.frame(Pair = character(), Count = integer(), stringsAsFactors = FALSE)
@@ -94,3 +97,4 @@ for (pair in keyword_pairs) {
 
 # Save the results to a new CSV file
 write.csv(results, "keyword_pairs_count.csv", row.names = FALSE)
+

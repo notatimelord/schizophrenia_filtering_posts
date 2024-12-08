@@ -53,16 +53,16 @@ for (i in 1:nrow(edges)) {
 layout <- layout_with_fr(graph)
 
 plot(graph, 
-     vertex.size = 15,  # Adjust size of nodes
-     vertex.label.cex = 0.8,  # Adjust the size of node labels
-     vertex.label.dist = 1.5,  # Distance of label from the node
-     vertex.color = "skyblue",  # Color of nodes
-     edge.width = E(graph)$normalized_weight * 5,  # Edge width based on the normalized weight
-     edge.color = "gray",  # Color of edges
-     layout = layout,  # Use force-directed layout
-     main = "Simplified Network of Group Combinations with Weights as Edge Thickness")  # Title of the graph
+     vertex.size = 15, 
+     vertex.label.cex = 0.8,  
+     vertex.label.dist = 1.5,  
+     vertex.label.degree = pi / 2,  
+     vertex.color = "skyblue",  
+     edge.width = E(graph)$normalized_weight * 5, 
+     edge.color = "gray",  
+     layout = layout, 
+     main = "Simplified Network of Group Combinations with Weights as Edge Thickness") 
 
-# Write weights to a CSV file
 write.csv(edges, "edges_with_weights.csv", row.names = FALSE)
 
 # Calculate and print means for schizophrenic males vs females

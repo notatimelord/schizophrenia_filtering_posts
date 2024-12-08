@@ -62,3 +62,26 @@ plot(graph,
      layout = layout,  # Use force-directed layout
      main = "Simplified Network of Group Combinations with Weights as Edge Thickness")  # Title of the graph
 
+# Write weights to a CSV file
+write.csv(edges, "edges_with_weights.csv", row.names = FALSE)
+
+# Calculate and print means for schizophrenic males vs females
+schizo_data <- data %>% filter(specific.disorder == "Schizophrenia")
+
+schizo_males <- schizo_data %>% filter(sex == "M")
+schizo_females <- schizo_data %>% filter(sex == "F")
+
+mean_schizo_males <- mean(schizo_males$IQ)
+mean_schizo_females <- mean(schizo_females$IQ)
+
+cat("\nMean IQ for Schizophrenic Males: ", mean_schizo_males, "\n")
+cat("Mean IQ for Schizophrenic Females: ", mean_schizo_females, "\n")
+
+# Calculate the mean IQ values for Healthy vs Schizophrenia
+healthy_data <- data %>% filter(specific.disorder == "Healthy control")
+
+mean_schizo_IQ <- mean(schizo_data$IQ)
+mean_healthy_IQ <- mean(healthy_data$IQ)
+
+cat("\nMean IQ for Schizophrenia: ", mean_schizo_IQ, "\n")
+cat("Mean IQ for Healthy control: ", mean_healthy_IQ, "\n")

@@ -141,6 +141,59 @@ split_result_df <- do.call(rbind, lapply(seq_len(nrow(result_df)), function(i) {
 
 # Save the result to a new CSV file
 write.csv(split_result_df, "classified_posts_split_with_id.csv", row.names = FALSE)
+colnames(split_result_df)[3] <- "Age"
+split_result_df$Age[grep("\\b(kid|childhood|child|primary school)\\b", split_result_df$Numbers_Found, ignore.case = TRUE)] <- "Child"
+split_result_df$Age[grep("\\b(adolescent|adolescence|teenager|teen|high school)\\b", split_result_df$Numbers_Found, ignore.case = TRUE)] <- "Teenager"
+split_result_df$Age[grep("\\b(college|young adult|university)\\b", split_result_df$Numbers_Found, ignore.case = TRUE)] <- "Young Adult"
+split_result_df$Age[grep("\\b(adulthood|adult)\\b", split_result_df$Numbers_Found, ignore.case = TRUE)] <- "Adult"
 
-# Print the split result data frame (optional)
+split_result_df$Numbers_Found <- ifelse(
+  is.na(split_result_df$Age),
+  gsub(".*?(\\d+).*", "\\1", split_result_df$Numbers_Found), # Extract the number
+  split_result_df$Numbers_Found                             # Otherwise, keep the original value
+)
+# Save the result to a new CSV file
+write.csv(split_result_df, "classified_posts_split_with_id.csv", row.names = FALSE)
+
+# Rename the last column to 'Age'
+colnames(split_result_df)[3] <- "Age"
+
+# Update the 'Age' column based on specific keywords
+split_result_df$Age[grep("\\b(kid|childhood|child|primary school)\\b", split_result_df$Numbers_Found, ignore.case = TRUE)] <- "Child"
+split_result_df$Age[grep("\\b(adolescent|adolescence|teenager|teen|high school)\\b", split_result_df$Numbers_Found, ignore.case = TRUE)] <- "Teenager"
+split_result_df$Age[grep("\\b(college|young adult|university)\\b", split_result_df$Numbers_Found, ignore.case = TRUE)] <- "Young Adult"
+split_result_df$Age[grep("\\b(adulthood|adult)\\b", split_result_df$Numbers_Found, ignore.case = TRUE)] <- "Adult"
+
+# Modify 'Numbers_Found' column to keep only numbers if 'Age' is NA
+split_result_df$Numbers_Found <- ifelse(
+  is.na(split_result_df$Age),
+  gsub(".*?(\\d+).*", "\\1", split_result_df$Numbers_Found), # Extract the number
+  split_result_df$Numbers_Found                             # Otherwise, keep the original value
+)
+
+# Convert 'Numbers_Found' to numeric for further classification
+split_result_df$Numbers_Found <- as.numeric(split_result_df$Numbers_Found)
+
+# Update 'Age' based on numeric range if it is still NA
+split_result_df$Age <- ifelse(
+  is.na(split_result_df$Age) & !is.na(split_result_df$Numbers_Found), # Check if 'Age' is NA and 'Numbers_Found' is valid
+  ifelse(
+    split_result_df$Numbers_Found >= 4 & split_result_df$Numbers_Found <= 13, "Child",
+    ifelse(
+      split_result_df$Numbers_Found > 13 & split_result_df$Numbers_Found <= 15, "Teenager",
+      ifelse(
+        split_result_df$Numbers_Found > 15 & split_result_df$Numbers_Found <= 18, "Young Adult",
+        "Adult" # Default to Adult if none of the above ranges match
+      )
+    )
+  ),
+  split_result_df$Age # Retain existing 'Age' if not NA
+)
+# Remove duplicate rows with the same ID and Age
+split_result_df <- split_result_df[!duplicated(split_result_df[c("Post_ID", "Age")]), ]
+
+# Print the updated data frame
 print(split_result_df)
+
+# Save the updated result to a new CSV file
+write.csv(split_result_df, "classified_posts_final.csv", row.names = FALSE)

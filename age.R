@@ -60,28 +60,6 @@ occurrences <- sapply(age_groups, function(group) {
   sum(data$age_group_from_text == group)
 })
 
-# Create graph edges and weights
-edges <- unlist(lapply(age_groups, function(group) c("Beginning of Schizophrenia", group)))
-edge_weights <- occurrences
-
-# Create graph object
-g <- graph_from_edgelist(matrix(edges, ncol = 2, byrow = TRUE), directed = FALSE)
-
-# Normalize edge weights for visualization
-normalized_weights <- (edge_weights / max(edge_weights)) * 19 + 1
-E(g)$weight <- normalized_weights
-E(g)$label <- edge_weights
-
-# Plot the graph
-layout_matrix <- layout_in_circle(g)
-plot(g, 
-     layout = layout_matrix,
-     vertex.size = 30, 
-     vertex.label.cex = 1.2, 
-     vertex.label.color = "black", 
-     vertex.color = "lightblue", 
-     edge.width = E(g)$weight, 
-     main = "Age Groups and Beginning of Schizophrenia")
 
 # Process and split data into a new structured data frame
 result_df <- data.frame(
@@ -162,8 +140,3 @@ plot(g,
      edge.label.cex = 1.2,           
      edge.label.color = "black",     
      edge.label.dist = 0.5)          
-
-print(split_result_df)
-
-# Save the updated result to a new CSV file
-write.csv(split_result_df, "classified_posts_final.csv", row.names = FALSE)

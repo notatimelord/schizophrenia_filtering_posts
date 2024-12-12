@@ -14,7 +14,7 @@ classify_age_group <- function(num) {
     return("Teenager")
   } else if (num >= 18 && num <= 24) {
     return("Young Adult")
-  } else if (num >= 25) {
+  } else if (num >= 25 && num <=100) {
     return("Adult")
   }
 }
@@ -85,7 +85,7 @@ result_df <- result_df %>%
       Numbers_Found >= 4 & Numbers_Found <= 12 ~ "kid",
       Numbers_Found >= 13 & Numbers_Found <= 17 ~ "teenager",
       Numbers_Found >= 18 & Numbers_Found <= 25 ~ "young adult",
-      Numbers_Found >= 26 ~ "adult",
+      Numbers_Found >= 26 & Numbers_Found <=100 ~ "adult",
       TRUE ~ NA_character_  # To handle cases that do not fit into the above ranges
     )
   )

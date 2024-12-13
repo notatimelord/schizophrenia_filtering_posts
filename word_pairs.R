@@ -1,4 +1,3 @@
-
 # Load necessary libraries
 library(dplyr)
 library(stringr)
@@ -50,10 +49,10 @@ keywords <- list(
             "manipulative relationships", "control in relationships", "toxic relationships", "self-destructive relationships", 
             "victim of abuse", "trauma from abuse", "coercive control", "abusive", "abused", "abuse"),
   hallucinations = c("2D-cartoon", "cartoon", "cartoonish", "cartoon-ish", "imagination", "fantasy", "imagine", "imaginative", "episode", "abstract",
-                     "voices", "voice", "see things", "illusion", "illusions", "god", "devil", "jesus", "derealization",
+                     "voices", "voice", "see things", "god", "devil", "jesus", "derealization",
                      "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucination", "hallucinate",
                      "hallucinations", "dream", "dreams", "wasn't real", "isn't real", "was not real", "is not real", "seeing silhouettes", "imaginary"),
-  paranoia = c("paranoia", "paranoid", "delusions", "delusion", "delusional"),
+  paranoia = c("paranoia", "paranoid", "illusion", "illusions", "delusions", "delusion", "delusional"),
   anxiety  = c("anxiety", "anxious", "panic attacks", "heart racing","racing heart", "pound", "pounding"),
   homicidal_tendencies = c("homicidal", "kill", "killing", "killed", "hurt his", "hurt her", "hurt my")
 )
@@ -83,7 +82,6 @@ matched_posts <- data.frame(Post = character(), Pair = character(), stringsAsFac
 keyword_pairs <- combn(names(keywords), 2, simplify = FALSE)
 
 # Iterate through posts and check for matches
-total_posts <- length(data$clean_csv)  # Total number of posts
 for (post in data$clean_csv) {
   matched_pairs <- c()  # Keep track of pairs matched in the current post
   
@@ -121,9 +119,6 @@ for (post in data$clean_csv) {
 pair_counts <- pair_counts %>%
   mutate(Percentage = round((Count / total_posts) * 100, 2))  # Add percentage column
 
-pair_counts <- pair_counts %>%
-  mutate(Percentage = round((Count / total_posts) * 100, 2))  # Add percentage column
-
 # Get the top three pairs by percentage
 top_3_pairs <- pair_counts %>%
   arrange(desc(Percentage)) %>%
@@ -132,3 +127,7 @@ top_3_pairs <- pair_counts %>%
 # Print the top three pairs
 print("Top 3 pairs with the highest percentages:")
 print(top_3_pairs)
+
+# Save results to CSV files
+write.csv(pair_counts, "keyword_pairs_count.csv", row.names = FALSE)
+write.csv(matched_posts, "matched_posts_with_pairs.csv", row.names = FALSE)

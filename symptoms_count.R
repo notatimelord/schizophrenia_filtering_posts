@@ -1,5 +1,8 @@
-# Load necessary libraries
+library(igraph)
+library(ggraph)
+library(tidygraph)
 library(dplyr)
+
 keywords <- list(
   depressed = c("depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", 
                 "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", 
@@ -109,3 +112,53 @@ print(keyword_counts_df)
 
 # Optionally, save to a new CSV file
 write.csv(keyword_counts_df, "keyword_counts.csv", row.names = FALSE)
+# Load required libraries
+
+# Step 1: Load the data
+keyword_counts <- read.csv("keyword_counts.csv")
+
+# Step 2: Calculate percentages
+total_count <- sum(keyword_counts$count)
+keyword_counts$percentage <- (keyword_counts$count / total_count) * 100
+
+# Step 3: Create edges dataframe
+edges <- data.frame(
+  from = keyword_counts$keyword,  # Keywords as "from" nodes
+  to = rep("symptoms", nrow(keyword_counts)),  # Central node "symptoms"
+  weight = keyword_counts$percentage  # Edge weights are percentages
+)
+
+# Step 4: Create the graph
+g <- graph_from_data_frame(edges, directed = FALSE)
+
+# Step 5: Create a radial layout
+central_node <- which(V(g)$name == "symptoms")
+num_keywords <- length(V(g)) - 1  # Exclude the central node
+
+# Define a circular layout for all nodes except the central node
+angles <- seq(0, 2 * pi, length.out = num_keywords + 1)[-1]
+radius <- 3  # Distance from the central node
+
+# Create x and y coordinates for the layout
+layout <- matrix(0, nrow = length(V(g)), ncol = 2)
+layout[central_node, ] <- c(0, 0)  # Central node at origin
+layout[-central_node, ] <- cbind(radius * cos(angles), radius * sin(angles))
+
+# Step 6: Define edge labels with percentages
+edge_labels <- paste0(round(E(g)$weight, 1), "%")
+
+# Step 7: Plot the graph
+plot(
+  g,
+  layout = layout,              # Use radial layout
+  vertex.label = V(g)$name,     # Node names as labels
+  vertex.label.cex = 0.8,       # Adjust label size
+  vertex.size = 35,             # Increase node size for readability
+  vertex.color = "skyblue",     # Node color
+  edge.color = "darkgray",      # Edge color
+  edge.width = 2,               # Edge thickness
+  edge.label = edge_labels,     # Percentages as edge labels
+  edge.label.cex = 0.7,         # Adjust edge label size
+  edge.label.color = "black",   # Edge label color
+  main = "Keyword-Symptoms Graph with Radial Layout"
+)

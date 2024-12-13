@@ -1,3 +1,4 @@
+
 # Load necessary libraries
 library(dplyr)
 library(stringr)
@@ -58,8 +59,8 @@ keywords <- list(
 )
 
 
-# Function to count keywords in a post
-count_keywords_in_post <- function(post, keyword_list) {
+# Function to check if a group of keywords appears in a post
+contains_keywords <- function(post, keyword_list) {
   post_text <- iconv(as.character(post), to = "UTF-8", sub = "byte")  # Convert to UTF-8 encoding
   post_text <- tolower(post_text)  # Convert to lowercase
   
@@ -68,31 +69,67 @@ count_keywords_in_post <- function(post, keyword_list) {
     return(FALSE)
   }
   
-  # Check if any of the keywords match
+  # Check if any of the keywords in the group match
   matches <- sapply(keyword_list, function(keyword) {
     grepl(keyword, post_text, fixed = TRUE)  # Match keywords exactly
   })
   return(any(matches))
 }
 
-# Create all possible keyword pairs
+# Initialize results dataframes
+pair_counts <- data.frame(Pair = character(), Count = integer(), stringsAsFactors = FALSE)
+matched_posts <- data.frame(Post = character(), Pair = character(), stringsAsFactors = FALSE)
+
+# Ensure keyword pairs are correctly formed
 keyword_pairs <- combn(names(keywords), 2, simplify = FALSE)
 
-# Initialize results dataframe
-results <- data.frame(Pair = character(), Count = integer(), stringsAsFactors = FALSE)
-
-# Iterate through keyword pairs and count matches
-for (pair in keyword_pairs) {
-  keywords_1 <- keywords[[pair[1]]]
-  keywords_2 <- keywords[[pair[2]]]
+# Iterate through posts and check for matches
+total_posts <- length(data$clean_csv)  # Total number of posts
+for (post in data$clean_csv) {
+  matched_pairs <- c()  # Keep track of pairs matched in the current post
   
-  count <- sum(sapply(data$clean_csv, function(post) {
-    count_keywords_in_post(post, c(keywords_1, keywords_2))
-  }))
+  for (pair in keyword_pairs) {
+    # Ensure pair is valid
+    if (!all(pair %in% names(keywords))) {
+      next
+    }
+    
+    keywords_1 <- keywords[[pair[1]]]
+    keywords_2 <- keywords[[pair[2]]]
+    
+    # Check if both keyword groups appear in the post
+    if (contains_keywords(post, keywords_1) && contains_keywords(post, keywords_2)) {
+      pair_name <- paste(pair[1], pair[2], sep = ", ")
+      matched_pairs <- c(matched_pairs, pair_name)  # Add the pair to matched pairs
+      matched_posts <- rbind(matched_posts, data.frame(Post = post, Pair = pair_name))
+    }
+  }
   
-  # Append the result to the results dataframe
-  results <- rbind(results, data.frame(Pair = paste(pair[1], pair[2], sep = ", "), Count = count))
+  # Count unique matches for the current post
+  if (length(matched_pairs) > 0) {
+    for (unique_pair in unique(matched_pairs)) {
+      existing_count <- pair_counts$Count[pair_counts$Pair == unique_pair]
+      if (length(existing_count) == 0) {
+        pair_counts <- rbind(pair_counts, data.frame(Pair = unique_pair, Count = 1))
+      } else {
+        pair_counts$Count[pair_counts$Pair == unique_pair] <- existing_count + 1
+      }
+    }
+  }
 }
 
-# Save the results to a new CSV file
-write.csv(results, "keyword_pairs_count.csv", row.names = FALSE)
+# Calculate percentages
+pair_counts <- pair_counts %>%
+  mutate(Percentage = round((Count / total_posts) * 100, 2))  # Add percentage column
+
+pair_counts <- pair_counts %>%
+  mutate(Percentage = round((Count / total_posts) * 100, 2))  # Add percentage column
+
+# Get the top three pairs by percentage
+top_3_pairs <- pair_counts %>%
+  arrange(desc(Percentage)) %>%
+  head(3)
+
+# Print the top three pairs
+print("Top 3 pairs with the highest percentages:")
+print(top_3_pairs)

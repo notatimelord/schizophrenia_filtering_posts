@@ -50,14 +50,13 @@ keywords <- list(
             "manipulative relationships", "control in relationships", "toxic relationships", "self-destructive relationships", 
             "victim of abuse", "trauma from abuse", "coercive control", "abusive", "abused", "abuse"),
   hallucinations = c("2D-cartoon", "cartoon", "cartoonish", "cartoon-ish", "imagination", "fantasy", "imagine", "imaginative", "episode", "abstract",
-                     "voices", "voice", "see things", "illusion", "illusions", "delusions", "delusion", "delusional", "god", "devil", "jesus", "derealization",
+                     "voices", "voice", "see things", "illusion", "illusions", "god", "devil", "jesus", "derealization",
                      "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucination", "hallucinate",
                      "hallucinations", "dream", "dreams", "wasn't real", "isn't real", "was not real", "is not real", "seeing silhouettes", "imaginary"),
-  paranoia = c("paranoia", "paranoid"),
+  paranoia = c("paranoia", "paranoid", "delusions", "delusion", "delusional"),
   anxiety  = c("anxiety", "anxious", "panic attacks", "heart racing","racing heart", "pound", "pounding"),
   homicidal_tendencies = c("homicidal", "kill", "killing", "killed", "hurt his", "hurt her", "hurt my")
 )
-
 
 # Function to check if a group of keywords appears in a post
 contains_keywords <- function(post, keyword_list) {

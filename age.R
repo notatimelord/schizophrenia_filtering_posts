@@ -10,7 +10,7 @@ colnames(data)[1] <- "clean_csv"
 # Function to extract and validate numbers based on the described conditions
 extract_valid_number <- function(text) {
   pattern <- "\\b(?:a\\s+|an\\s+|was\\s+|at\\s+|around\\s+)?(\\d{1,2})(?=(\\s*(?:s|'s|\\s+and\\b|\\s+or\\b|\\s+when\\b|\\s+which\\b|\\s+or\\b|\\s*(?:\\d{1,2}'s|20\\s*s|30\\s*s|40\\s*s|50\\s*s|60\\s*s|70\\s*s|twenty|thirty|forty|fifty|sixty|seventy|twenty\\s+years?))|[\\s\\b]*$))"
-
+  
   matches <- str_match_all(text, pattern)
   
   numbers <- as.numeric(matches[[1]][, 2])
@@ -22,9 +22,15 @@ extract_valid_number <- function(text) {
   }
 }
 
+# Function to classify age group based on keywords and exclude specific conditions
 classify_age_group_from_keywords <- function(text) {
+  # Ensure the text is a character vector
+  text <- as.character(text)
+  
+  # Convert text to UTF-8 encoding to avoid issues with non-ASCII characters
   text <- iconv(text, from = "latin1", to = "UTF-8", sub = "byte")
   
+  # List of age-related keywords and their corresponding groups
   age_word_patterns <- list(
     "Kid" = c("kid", "child", "childhood", "primary school"),
     "Teenager" = c("teen", "teenager", "adolescent", "adolescence"),
@@ -32,13 +38,16 @@ classify_age_group_from_keywords <- function(text) {
     "Adult" = c("adult", "adulthood")
   )
   
-  # Replace keywords with their corresponding number
+  # List of exclusion conditions
+  exclusion_conditions <- c("graduated", "passed", "failed")
+  
+  # Check for keywords and replace with corresponding age group number
   for (age_group in names(age_word_patterns)) {
     keywords <- age_word_patterns[[age_group]]
     for (keyword in keywords) {
-      if (str_detect(tolower(text), keyword)) {
-        # Debugging: Print to check which keyword matched
-        print(paste("Matched keyword:", keyword, "for age group:", age_group))
+      # Check if keyword is present and ensure exclusion conditions are not present
+      if (str_detect(tolower(text), fixed(keyword)) && 
+          !any(str_detect(tolower(text), fixed(exclusion_conditions)))) {
         
         # Replace the keyword with the corresponding number
         if (age_group == "Kid") {
@@ -63,14 +72,12 @@ data$clean_csv <- sapply(data$clean_csv, classify_age_group_from_keywords)
 # Save the updated CSV with replaced keywords
 write.csv(data, "clean_with_replaced_keywords.csv", row.names = FALSE)
 
+
 # Apply the age group classification from keywords to the data
 data$Age_Group_from_keywords <- sapply(data$clean_csv, classify_age_group_from_keywords)
 
 # Ensure we save the updated `Age_Group_from_keywords` directly to the CSV
 write.csv(data, "updated_clean_with_keywords.csv", row.names = FALSE)
-
-
-
 
 
 # Apply the function to extract numbers from the text
@@ -188,8 +195,14 @@ plot(g,
      vertex.label.pos = 0.5,         
      edge.width = E(g)$weight / 10,
      edge.color = "darkgrey",       
-     layout = layout_with_fr(g, niter = 500, repulserad = 700), 
+     layout = layout_with_fr(g, niter = 700, repulserad = 700), 
      edge.label = E(g)$label,       
      edge.label.cex = 1.2,           
      edge.label.color = "black",     
      edge.label.dist = 0.5)
+
+
+
+data$Numbers_Found <- as.numeric(data$Numbers_Found)
+average_age <- mean(data$Numbers_Found, na.rm = TRUE)
+print(paste("The average age is:", round(average_age, 2)))

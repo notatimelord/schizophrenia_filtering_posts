@@ -15,8 +15,13 @@ data <- data %>%
       IQ > 90 & IQ < 110 ~ "90<IQ<110",
       TRUE ~ "IQ>=110"
     ),
-    education_category = ifelse(education <= 12, "Educ.<=12", "Educ.>12")
+    education_category = case_when(
+      education <= 9 ~ "Educ.<=9",
+      education > 9 & education <= 12 ~ "Educ. between 9 and 12",
+      TRUE ~ "Educ.>12"
+    )
   )
+
 
 data <- data %>%
   mutate(
@@ -85,3 +90,4 @@ mean_healthy_IQ <- mean(healthy_data$IQ)
 
 cat("\nMean IQ for Schizophrenia: ", mean_schizo_IQ, "\n")
 cat("Mean IQ for Healthy control: ", mean_healthy_IQ, "\n")
+

@@ -5,6 +5,10 @@ library(tidyr)
 
 # Load and clean the data
 data <- read.csv("clean.csv")
+
+# Calculate the total number of posts
+total_posts <- nrow(data)
+
 colnames(data)[1] <- "clean_csv"
 
 # Function to extract and validate numbers based on the described conditions
@@ -206,3 +210,11 @@ plot(g,
 data$Numbers_Found <- as.numeric(data$Numbers_Found)
 average_age <- mean(data$Numbers_Found, na.rm = TRUE)
 print(paste("The average age is:", round(average_age, 2)))
+
+# Calculate the number of posts with valid onset-age
+posts_with_onset_age <- sum(!is.na(data$Numbers_Found))
+
+# Print the results
+print(paste("Number of posts with onset-age:", posts_with_onset_age))
+print(paste("Total number of posts:", total_posts))
+print(paste("Percentage of posts with onset-age:", round((posts_with_onset_age / total_posts) * 100, 2), "%"))

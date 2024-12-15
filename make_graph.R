@@ -1,4 +1,53 @@
 library(igraph)
+library(dplyr)
+library(tidyr)
+
+results <- read.csv("keyword_pairs_count.csv")
+
+keyword_pairs <- results %>%
+  separate(Pair, into = c("Keyword1", "Keyword2"), sep = ", ") %>%
+  mutate(Count = as.integer(Count))
+
+edges <- keyword_pairs %>%
+  select(Keyword1, Keyword2, Count) %>%
+  filter(Keyword1 != Keyword2)
+
+g <- graph_from_data_frame(edges, directed = FALSE)
+
+layout <- layout_with_fr(g)
+
+plot(g, 
+     vertex.size = 15,
+     vertex.label.cex = 0.8,
+     vertex.label.dist = 2.5,
+     vertex.color = "skyblue",
+     edge.width = E(g)$Count / 10,
+     edge.color = "gray",
+     layout = layout,
+     main = "Schizofrenia Co-occurrence Network with
+     Weights being the Edge thickness")
+
+ global_clustering <- transitivity(g, type = "global")
+ print(global_clustering)
+
+ local_clustering <- transitivity(g, type = "localaverage")
+ print(local_clustering)
+
+ # Calculate degree for each node
+ node_degrees <- degree(g, mode = "all")  # Use "all" for an undirected graph
+ 
+ # Find the node with the highest degree
+ most_significant_node <- names(which.max(node_degrees))
+ 
+ # Print the most significant node and its degree
+ cat("The most significant node is:", most_significant_node, "with a degree of", max(node_degrees), "\n")
+ 
+ # Optional: View all nodes and their degrees
+ print(node_degrees)
+ # Load required libraries
+ # Load required libraries
+ # Load required libraries
+ library(igraph)
  
  # Define the data
  keywords <- c("anger", "paranoia", "hallucinations", "addiction", 

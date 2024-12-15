@@ -6,7 +6,6 @@ if (!require(igraph)) install.packages("igraph", dependencies = TRUE)
 library(igraph)
 
 # Define the keyword categories
-
 keywords <- list(
   depressed = c("depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", 
                 "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", 
@@ -47,14 +46,16 @@ keywords <- list(
                 "can't stop", "usage", "chemical dependence", "craving drugs", "pill addiction", "habit I can't break", "LSD", "heroine", "weed"),
   abuse = c("sexual abuse", "physical abuse", "emotional abuse", "abuse in relationships", "domestic violence", "abusive behavior", 
             "manipulative relationships", "control in relationships", "toxic relationships", "self-destructive relationships", 
-            "victim of abuse", "trauma from abuse", "coercive control", "abusive", "abused", "abuse"),
+            "victim of abuse", "trauma from abuse", "coercive control", "abusive", "abused", "abuse", "rape", "raped"),
   hallucinations = c("2D-cartoon", "cartoon", "cartoonish", "cartoon-ish", "imagination", "fantasy", "imagine", "imaginative", "episode", "abstract",
                      "voices", "voice", "see things", "god", "devil", "jesus", "derealization",
                      "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucination", "hallucinate",
                      "hallucinations", "dream", "dreams", "wasn't real", "isn't real", "was not real", "is not real", "seeing silhouettes", "imaginary"),
   paranoia = c("paranoia", "paranoid", "illusion", "illusions", "delusions", "delusion", "delusional"),
   anxiety  = c("anxiety", "anxious", "panic attacks", "heart racing","racing heart", "pound", "pounding"),
-  homicidal_tendencies = c("homicidal", "kill", "killing", "killed", "hurt his", "hurt her", "hurt my")
+  homicidal_tendencies = c("homicidal", "kill", "killing", "killed", "hurt his", "hurt her", "hurt my"),
+  genes = c("genetics", "genes", "genetical", "gene", "hereditary"),
+  schizophrenia = c("schizophrenic", "schizophrenia", "schizoaffective", "schizo", "schizotypical")
 )
 
 # Function to check if a group of keywords appears in a post
@@ -114,6 +115,7 @@ for (post in data$clean_csv) {
     }
   }
 }
+total_posts <- length(data$clean_csv)
 
 # Calculate percentages
 pair_counts <- pair_counts %>%

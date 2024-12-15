@@ -231,6 +231,25 @@ print(local_clustering)
 # Calculate degree for each node
 node_degrees <- degree(g, mode = "all")  # Use "all" for an undirected graph
 
+community <- cluster_louvain(g)
+
+# Plot the community detection
+plot(community, g)
+
+# Print the symptoms assigned to each community
+community_members <- communities(community)
+for (i in 1:length(community_members)) {
+  cat("\nCommunity", i, "includes symptoms: \n")
+  cat(community_members[[i]], "\n\n")
+}
+transitivity(g, type = "global")
+mean_distance(g, directed = FALSE)
+edge_density(g)
+clusters<-cluster_louvain(g)
+for (i in 1:length(clusters)) {
+  cat("Group", i, ":\n")
+  cat(clusters[[i]], "\n\n")
+}
 # Find the node with the highest degree
 most_significant_node <- names(which.max(node_degrees))
 

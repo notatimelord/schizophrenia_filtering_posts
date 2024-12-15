@@ -206,21 +206,41 @@ keyword_pairs <- results %>%
 edges <- keyword_pairs %>%
   select(Keyword1, Keyword2, Count) %>%
   filter(Keyword1 != Keyword2)
-
+# Create graph from the data frame
 g <- graph_from_data_frame(edges, directed = FALSE)
 
+# Compute the layout
 layout <- layout_with_fr(g)
 
+low_threshold <- quantile(E(g)$Count, 0.33)  # Lower third
+high_threshold <- quantile(E(g)$Count, 0.67)  # Upper third
+
+# Assign colors based on edge weights
+edge_colors <- ifelse(E(g)$Count <= low_threshold, "gray", 
+                      ifelse(E(g)$Count <= high_threshold, "green", "red"))
+
+# Calculate the number of red and green edges
+red_edges <- sum(edge_colors == "red")
+green_edges <- sum(edge_colors == "green")
+total_edges <- length(E(g)$Count)
+
+# Calculate the percentages
+percentage_red <- (red_edges / total_edges) * 100
+percentage_green <- (green_edges / total_edges) * 100
+
+# Print the percentages
+cat("Percentage of red edges:", percentage_red, "%\n")
+cat("Percentage of green edges:", percentage_green, "%\n")
+# Plot the graph with labels inside nodes
 plot(g, 
      vertex.size = 15,
      vertex.label.cex = 0.8,
-     vertex.label.dist = 2.5,
+     vertex.label.dist = 0,  # Move labels inside the nodes
      vertex.color = "skyblue",
      edge.width = E(g)$Count / 10,
-     edge.color = "gray",
+     edge.color = edge_colors,  # Apply color based on edge weight
      layout = layout,
-     main = "Schizofrenia Co-occurrence Network with
-     Weights being the Edge thickness")
+     main = "Schizophrenia Co-occurrence Network with Weights Colored by Edge Weight")
 
 global_clustering <- transitivity(g, type = "global")
 print(global_clustering)
@@ -297,3 +317,4 @@ plot(g,
      edge.label.cex = 0.8, 
      edge.label.color = "blue", 
      main = "Degrees - Circular Graph")
+

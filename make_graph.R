@@ -48,15 +48,16 @@ plot(g,
  # Load required libraries
  # Load required libraries
  library(igraph)
- 
- # Define the data
+ # Define the updated data
  keywords <- c("anger", "paranoia", "hallucinations", "addiction", 
                "emptiness", "depressed", "alcohol", "social_withdrawal", 
                "sadness", "abuse", "homicidal_tendencies", "suicide", 
                "anxiety", "sleep issues", "genes", "self_harm", 
-               "guilt", "schizophrenia", "poor academics")
+               "guilt", "schizophrenia", "poor academics", "bipolar", 
+               "psychosis", "meds", "trauma")
  
- values <- c(16, 17, 18, 17, 9, 15, 6, 10, 9, 7, 12, 11, 12, 9, 9, 4, 8, 14, 7)
+ values <- c(19, 21, 22, 21, 14, 19, 11, 13, 12, 9, 17, 13, 14, 10, 11, 5, 8, 19, 7, 12, 16, 15, 10)
+ 
  
  # Create an edge list
  edges <- unlist(lapply(keywords, function(keyword) c("Degrees", keyword)))
@@ -83,4 +84,3 @@ plot(g,
       vertex.color = "lightblue",  # Set node color to light blue
       edge.label = E(g)$weight, edge.label.cex = 0.8, edge.label.color = "blue", 
       main = "Degrees - Circular Graph")
- 

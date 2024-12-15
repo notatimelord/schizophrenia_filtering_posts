@@ -55,8 +55,15 @@ keywords <- list(
   anxiety  = c("anxiety", "anxious", "panic attacks", "heart racing","racing heart", "pound", "pounding"),
   homicidal_tendencies = c("homicidal", "kill", "killing", "killed", "hurt his", "hurt her", "hurt my"),
   genes = c("genetics", "genes", "genetical", "gene", "hereditary"),
-  schizophrenia = c("schizophrenic", "schizophrenia", "schizoaffective", "schizo", "schizotypical")
+  schizophrenia = c("schizophrenic", "schizophrenia", "schizoaffective", "schizo", "schizotypical"),
+  poor_academic_perf = c("failing", "fail", "failed", "barely passed", "barely graduated", "barely passing", "not passed", "didn't pass", "can't study", "barely finished", "kicked out of the university",
+                         "kicked out of university", "kicked out of uni", "kicked out of school", "kicked out of college", "pity passed me", "failed", "never do any work",
+                         "i'm behind", "i am behind", "i was behind", "school life was very affected", "school life was affected", "not graduating")
+  
 )
+
+data <- read.csv("clean.csv")
+total_posts <- nrow(data) 
 
 # Function to check if a group of keywords appears in a post
 contains_keywords <- function(post, keyword_list) {
@@ -83,7 +90,7 @@ matched_posts <- data.frame(Post = character(), Pair = character(), stringsAsFac
 keyword_pairs <- combn(names(keywords), 2, simplify = FALSE)
 
 # Iterate through posts and check for matches
-for (post in data$clean_csv) {
+for (post in data$x) {
   matched_pairs <- c()  # Keep track of pairs matched in the current post
   
   for (pair in keyword_pairs) {
@@ -115,7 +122,7 @@ for (post in data$clean_csv) {
     }
   }
 }
-total_posts <- length(data$clean_csv)
+
 
 # Calculate percentages
 pair_counts <- pair_counts %>%

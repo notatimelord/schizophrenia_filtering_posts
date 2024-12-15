@@ -6,7 +6,9 @@ library(tidyr)
 # Load and clean the data
 data <- read.csv("clean.csv")
 colnames(data)[1] <- "clean_csv"
+# Define the keyword categories
 
+# Define the keyword categories
 keywords <- list(
   depressed = c("depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", 
                 "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", 
@@ -39,7 +41,7 @@ keywords <- list(
                         "socially distant", "don't feel like talking", "don't fit in", "loneliness", "lonely", "isolation",
                         "want to scream", "feeling alone", "solitude", "can't socialize", "abandoned", "unwanted", "nobody around", "no one cares", 
                         "socially invisible", "cut off from everyone", "detached", "feeling friendless", "by myself", "ghosting",
-                        "withdraw from", "lonesome", "lonesomeness"),
+                        "withdraw from", "lonesome", "lonesomeness", "isolate"),
   alcohol = c("alcohol", "alcoholism", "drink", "drinking problem", "alcoholic", "booze", "liquor", "beer", "whiskey", "wine", 
               "spirits", "intoxicated", "dependence on alcohol", "getting drunk", "wasted", "tipsy", "too much alcohol", 
               "need a drink", "drank", "drunk"),
@@ -53,14 +55,18 @@ keywords <- list(
                      "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucination", "hallucinate",
                      "hallucinations", "dream", "dreams", "wasn't real", "isn't real", "was not real", "is not real", "seeing silhouettes", "imaginary"),
   paranoia = c("paranoia", "paranoid", "illusion", "illusions", "delusions", "delusion", "delusional"),
-  anxiety  = c("anxiety", "anxious", "panic attacks", "heart racing","racing heart", "pound", "pounding"),
+  anxiety  = c("anxiety", "anxious", "panic", "panicked", "panic attacks", "heart racing","racing heart", "pound", "pounding"),
   homicidal_tendencies = c("homicidal", "kill", "killing", "killed", "hurt his", "hurt her", "hurt my"),
   genes = c("genetics", "genes", "genetical", "gene", "hereditary"),
+  bipolar = c( "bipolar"),
+  fear = c("fear", "scared", "afraid", "terrified", "horrified", "fearful"),
+  psychosis = c( "psychosis", "psychotic"),
   schizophrenia = c("schizophrenic", "schizophrenia", "schizoaffective", "schizo", "schizotypical"),
   poor_academic_perf = c("failing", "fail", "failed", "barely passed", "barely graduated", "barely passing", "not passed", "didn't pass", "can't study", "barely finished", "kicked out of the university",
                          "kicked out of university", "kicked out of uni", "kicked out of school", "kicked out of college", "pity passed me", "failed", "never do any work",
-                         "i'm behind", "i am behind", "i was behind", "school life was very affected", "school life was affected", "not graduating")
-  
+                         "i'm behind", "i am behind", "i was behind", "school life was very affected", "school life was affected", "not graduating"),
+  trauma = c("PTSD", "trauma", "traumatic", "traumatised", "maltreatment", "suffering", "suffered"),
+  confusion = c("confused", "confusion", "confusing", "puzzled", "dazzled", "disorientation", "disorientated", "uncertain", "uncertainty", "don't know", "can't tell", "fogginess", "like fog")
 )
 
 
@@ -233,21 +239,18 @@ cat("The most significant node is:", most_significant_node, "with a degree of", 
 
 # Optional: View all nodes and their degrees
 print(node_degrees)
-
-
-keywords <- c("anger", "paranoia", "hallucinations", "addiction", 
-              "emptiness", "depressed", "alcohol", "social_withdrawal", 
+# Updated keywords and values based on node degrees
+keywords <- c("social_withdrawal", "paranoia", "hallucinations", "addiction", 
+              "emptiness", "depressed", "alcohol", "anger", 
               "sadness", "abuse", "homicidal_tendencies", "suicide", 
               "anxiety", "sleep_issues", "genes", "self_harm", 
-              "guilt", "schizophrenia", "poor_academic_perf", "Adult", 
-              "Kid", "Teenager", "Young Adult")
+              "guilt", "Kid", "Teenager", "Young Adult", "trauma", "meds",
+              "schizophrenia", "poor_academic_perf", "Adult")
 
-values <- c(17, 20, 22, 20, 10, 19, 8, 11, 12, 7, 13, 13, 15, 11, 9, 4, 8, 18, 9, 
-            11, 7, 9, 9) # Adjusted values based on node degrees.
+values <- c(15, 25, 27, 25, 17, 24, 15, 21, 16, 10, 19, 15, 19, 13, 19, 4, 9, 10, 12, 11, 20, 15, 24, 9, 15)
 
 # Create an edge list
 edges <- unlist(lapply(keywords, function(keyword) c("Degrees", keyword)))
-
 # Create the graph
 g <- graph_from_edgelist(matrix(edges, ncol = 2, byrow = TRUE), directed = FALSE)
 
@@ -255,7 +258,6 @@ g <- graph_from_edgelist(matrix(edges, ncol = 2, byrow = TRUE), directed = FALSE
 E(g)$weight <- values
 
 # Create a custom layout for the circular structure
-# Calculate positions manually for even distribution
 num_nodes <- length(keywords)
 theta <- seq(0, 2*pi, length.out = num_nodes + 1)[-1]  # Angles for the nodes
 layout <- cbind(cos(theta), sin(theta))  # Coordinates for the nodes in a circle
@@ -263,10 +265,16 @@ layout <- cbind(cos(theta), sin(theta))  # Coordinates for the nodes in a circle
 # Adjust layout so that "Degrees" stays at the center
 layout <- rbind(c(0, 0), layout)  # Add "Degrees" at the center
 
-# Plot the graph with light blue nodes and names inside the nodes
-plot(g, layout = layout, vertex.size = 35, vertex.label.cex = 0.8, 
-     vertex.label.dist = 0,  # Place the labels inside the nodes
+# Plot the graph with labels outside the nodes and smaller nodes
+plot(g, 
+     layout = layout, 
+     vertex.size = 10,  # Make the nodes smaller
+     vertex.label.cex = 0.8,  # Adjust label size
+     vertex.label.dist = 2,  # Move labels outside the nodes (increase the distance)
      vertex.label.color = "black", 
      vertex.color = "lightblue",  # Set node color to light blue
-     edge.label = E(g)$weight, edge.label.cex = 0.8, edge.label.color = "blue", 
+     edge.width = E(g)$weight / 10,  # Adjust edge width based on weight
+     edge.label = E(g)$weight, 
+     edge.label.cex = 0.8, 
+     edge.label.color = "blue", 
      main = "Degrees - Circular Graph")

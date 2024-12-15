@@ -38,7 +38,7 @@ keywords <- list(
                         "socially distant", "don't feel like talking", "don't fit in", "loneliness", "lonely", "isolation",
                         "want to scream", "feeling alone", "solitude", "can't socialize", "abandoned", "unwanted", "nobody around", "no one cares", 
                         "socially invisible", "cut off from everyone", "detached", "feeling friendless", "by myself", "ghosting",
-                        "withdraw from", "lonesome", "lonesomeness"),
+                        "withdraw from", "lonesome", "lonesomeness", "isolate"),
   alcohol = c("alcohol", "alcoholism", "drink", "drinking problem", "alcoholic", "booze", "liquor", "beer", "whiskey", "wine", 
               "spirits", "intoxicated", "dependence on alcohol", "getting drunk", "wasted", "tipsy", "too much alcohol", 
               "need a drink", "drank", "drunk"),
@@ -55,11 +55,14 @@ keywords <- list(
   anxiety  = c("anxiety", "anxious", "panic attacks", "heart racing","racing heart", "pound", "pounding"),
   homicidal_tendencies = c("homicidal", "kill", "killing", "killed", "hurt his", "hurt her", "hurt my"),
   genes = c("genetics", "genes", "genetical", "gene", "hereditary"),
+  bipolar = c( "bipolar"),
+  psychosis = c( "psychosis", "psychotic"),
   schizophrenia = c("schizophrenic", "schizophrenia", "schizoaffective", "schizo", "schizotypical"),
   poor_academic_perf = c("failing", "fail", "failed", "barely passed", "barely graduated", "barely passing", "not passed", "didn't pass", "can't study", "barely finished", "kicked out of the university",
                          "kicked out of university", "kicked out of uni", "kicked out of school", "kicked out of college", "pity passed me", "failed", "never do any work",
-                         "i'm behind", "i am behind", "i was behind", "school life was very affected", "school life was affected", "not graduating")
-  
+                         "i'm behind", "i am behind", "i was behind", "school life was very affected", "school life was affected", "not graduating"),
+  trauma = c("PTSD", "trauma", "traumatic", "traumatised"),
+  meds = c("medication", "medicine", "hospitilized", "meds")
 )
 
 data <- read.csv("clean.csv")

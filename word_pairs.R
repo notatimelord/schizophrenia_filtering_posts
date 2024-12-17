@@ -5,14 +5,14 @@ library(stringr)
 if (!require(igraph)) install.packages("igraph", dependencies = TRUE)
 library(igraph)
 
-# Define the keyword categories
+
 keywords <- list(
   depressed = c("depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", 
                 "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", 
                 "worthlessness", "feeling numb", "sleeping too much", "can't get out of bed", "darker days", "no motivation", 
                 "overwhelmed", "disconnection from others", "falling into a hole", "depressed", "depressive", "feeling down", 
                 "melancholy", "blue", "disheartened", "sad vibes", "like shit", "emotionally drained", "lost interest", 
-                "feeling horrible", "heavy-hearted", "in the dumps", "apathetic", "apathy", "feel nothing", "cared less"),
+                "feeling horrible", "heavy-hearted", "desperate", "desperation", "despair", "apathetic", "apathy", "feel nothing", "cared less"),
   sadness = c("sadness", "sorrow", "unhappiness", "grief", "desolation", "misery", "miserable", "crying inside", "tearful", 
               "broken-hearted", "aching heart", "cry", "not happy", "not okay", "crying", "broken", "overwhelmed by sadness", 
               "melancholy mood", "emotional pain"),
@@ -47,22 +47,24 @@ keywords <- list(
   abuse = c("sexual abuse", "physical abuse", "emotional abuse", "abuse in relationships", "domestic violence", "abusive behavior", 
             "manipulative relationships", "control in relationships", "toxic relationships", "self-destructive relationships", 
             "victim of abuse", "trauma from abuse", "coercive control", "abusive", "abused", "abuse", "rape", "raped"),
-  hallucinations = c("2D-cartoon", "cartoon", "cartoonish", "cartoon-ish", "imagination", "fantasy", "imagine", "imaginative", "episode", "abstract",
-                     "voices", "voice", "see things", "god", "devil", "jesus", "derealization",
+  hallucinations = c("2D-cartoon", "positive symptoms", "cartoon", "cartoonish", "cartoon-ish", "imagination", "fantasy", "imagine", "imaginative", "episode", "abstract",
+                     "voices", "voice", "see things", "god", "devil", "jesus", "derealization", "feels vivid", "feels real",
                      "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucination", "hallucinate",
-                     "hallucinations", "dream", "dreams", "wasn't real", "isn't real", "was not real", "is not real", "seeing silhouettes", "imaginary"),
+                     "hallucinations", "dream", "dreams", "wasn't real", "isn't real",  "not real", "seeing silhouettes", "imaginary"),
   paranoia = c("paranoia", "paranoid", "illusion", "illusions", "delusions", "delusion", "delusional"),
-  anxiety  = c("anxiety", "anxious", "panic attacks", "heart racing","racing heart", "pound", "pounding"),
+  anxiety  = c("anxiety", "anxious", "panic", "panicked", "panic attacks", "heart racing","racing heart", "pound", "pounding"),
   homicidal_tendencies = c("homicidal", "kill", "killing", "killed", "hurt his", "hurt her", "hurt my"),
   genes = c("genetics", "genes", "genetical", "gene", "hereditary"),
   bipolar = c( "bipolar"),
+  fear = c("fear", "scared", "afraid", "terrified", "horrified", "fearful"),
   psychosis = c( "psychosis", "psychotic"),
   schizophrenia = c("schizophrenic", "schizophrenia", "schizoaffective", "schizo", "schizotypical"),
   poor_academic_perf = c("failing", "fail", "failed", "barely passed", "barely graduated", "barely passing", "not passed", "didn't pass", "can't study", "barely finished", "kicked out of the university",
                          "kicked out of university", "kicked out of uni", "kicked out of school", "kicked out of college", "pity passed me", "failed", "never do any work",
                          "i'm behind", "i am behind", "i was behind", "school life was very affected", "school life was affected", "not graduating"),
-  trauma = c("PTSD", "trauma", "traumatic", "traumatised"),
-  meds = c("medication", "medicine", "hospitilized", "meds")
+  trauma = c("PTSD", "trauma", "traumatic", "traumatised", "maltreatment", "suffering", "suffered"),
+  confusion = c("confused", "confusion", "confusing", "puzzled", "dazzled", "disorientation", "disorientated", "uncertain", "uncertainty", "don't know", "can't tell", "fogginess", "like fog", "don't understand",
+                "can't understand", "not understand")
 )
 
 data <- read.csv("clean.csv")

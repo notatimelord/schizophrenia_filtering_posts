@@ -3,14 +3,27 @@ library(dplyr)
 library(tidyr)
 
 #for the keywords without onset
-keywords <- c("schizophrenia", "paranoia", "hallucinations", "addiction", 
-              "emptiness", "depressed", "alcohol", "genes", 
-              "sadness", "abuse", "homicidal_tendencies", "suicide", 
-              "anxiety", "sleep issues", "social_withdrawal", "self_harm", 
-              "guilt", "anger", "fear", "bipolar", 
-              "psychosis", "meds", "trauma", "poor academics")
+keyword_group <- c("hallucinations", "paranoia", "schizophrenia", "addiction", 
+                   "bipolar", "depressed", "guilt", "anger", 
+                   "trauma", "psychosis", "suicide", "emptiness", 
+                   "alcohol", "genes", "sadness", "homicidal_tendencies", 
+                   "fear", "social_withdrawal", "sleep issues", "poor academics",
+                   "self_harm", "poor academics")
 
-values <- c(20, 22, 23, 22, 16, 20, 13, 12, 13, 10, 18, 13, 16, 11, 17, 14, 9, 20, 17, 11, 15, 17, 16, 7)
+values <- c(23, 22, 20, 22, 11, 20, 9, 20, 16, 17, 13, 16, 13, 12, 13, 18, 17, 14, 11, 7)
+
+
+# for the keywords with onset
+keywords <- c("social_withdrawal", "paranoia", "hallucinations", "addiction", 
+              "emptiness", "depressed", "alcohol", "anger", 
+              "sadness", "abuse", "homicidal_tendencies", "suicide", 
+              "anxiety", "sleep_issues", "genes", "self_harm", 
+              "guilt", "Kid", "Teenager", "Young Adult", "trauma", "meds",
+              "schizophrenia", "poor_academic_perf", "Adult")
+
+values <- c(15, 25, 27, 25, 17, 24, 15, 21, 16, 10, 19, 15, 19, 13, 19, 4, 9, 10, 12, 11, 20, 15, 24, 9, 15)
+
+
 
 edges <- unlist(lapply(keywords, function(keyword) c("Degrees", keyword)))
 g <- graph_from_edgelist(matrix(edges, ncol = 2, byrow = TRUE), directed = FALSE)
@@ -37,3 +50,5 @@ plot(g,
      edge.label.cex = 0.8, 
      edge.label.color = "blue", 
      main = "Degrees - Circular Graph")
+
+

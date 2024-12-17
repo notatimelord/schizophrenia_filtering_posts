@@ -3,6 +3,7 @@ library(dplyr)
 library(tidyr)
 
 results <- read.csv("keyword_pairs_count.csv")
+results <- read.csv("final_merged_keyword_pair_counts.csv")
 keyword_pairs <- results %>%
   separate(Pair, into = c("Keyword1", "Keyword2"), sep = ", ") %>%
   mutate(Count = as.integer(Count))
@@ -67,4 +68,5 @@ cat("Node with highest degree:", most_significant_node, "with a degree of", max(
 average_path_symptom <- mean_distance(g, directed = FALSE)
 print(average_path_symptom)
 print(node_degrees)
+
 

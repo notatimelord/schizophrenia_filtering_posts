@@ -2,13 +2,12 @@ library(igraph)
 library(stringr)
 library(dplyr)
 library(tidyr)
+library(stringr)
 
-# Load and clean the data
+
 data <- read.csv("clean.csv")
 colnames(data)[1] <- "clean_csv"
-# Define the keyword categories
 
-# Define the keyword categories
 keywords <- list(
   depressed = c("depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", 
                 "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", 
@@ -70,7 +69,7 @@ keywords <- list(
 )
 
 
-# Flatten the keywords list into a vector
+# turn the keywords list into a vector
 all_keywords <- unlist(keywords)
 
 # Function to check if a text contains any keywords
@@ -117,20 +116,10 @@ data_with_keywords <- data_with_keywords %>%
   filter(n_distinct(Age_Group) > 1 | row_number() == 1) %>%  # Keep only distinct age groups per post
   ungroup()
 
-# Write the final data to CSV
 output_data <- data_with_keywords %>%
   select(Post = clean_csv, Age = Numbers_Found, Age_Group) %>%
   arrange(Post, Age)
 write.csv(output_data, "matched_posts_with_ages.csv", row.names = FALSE)
-
-# Summary of the results
-print("CSV created: matched_posts_with_ages.csv")
-
-
-
-
-library(dplyr)
-library(stringr)
 
 # Read the CSV file
 df <- read.csv("cleaned_matched_posts_with_ages.csv")
@@ -146,23 +135,18 @@ check_traits <- function(text, keywords_list) {
   return(na.omit(matches))  # Return non-NA matches
 }
 
-# Apply the function to each row and split rows for multiple matches
 df_traits <- df %>%
   rowwise() %>%
-  mutate(traits = list(check_traits(Post, keywords))) %>%  # Replace `post_text` with the correct column
+  mutate(traits = list(check_traits(Post, keywords))) %>%  
   unnest(traits)  # Expand rows for multiple matches
 
-# Save the updated data to a new CSV
-# Remove the first two columns
 df_traits <- df_traits %>%
   select(-1, -2)  # Removes the first two columns by index
 
 df_traits <- df_traits %>%
-  mutate(Pair = paste0(Age_Group, ", ", traits)) %>%  # Replace `Age_Group` and `Pairs` with actual column names
-  select(-Age_Group, -traits)  # Drop the original columns after combining
+  mutate(Pair = paste0(Age_Group, ", ", traits)) %>%  
+  select(-Age_Group, -traits) 
 
-
-# Save the updated data to a new CSV
 write.csv(df_traits, "matched_posts_with_traits.csv", row.names = FALSE)
 
 # Calculate counts of unique pairs
@@ -171,150 +155,15 @@ pair_counts <- df_traits %>%
   summarise(Count = n(), .groups = "drop")  # Group by Pair and count occurrences
 pair_counts <- pair_counts %>%
   mutate(Percentage = 0)
-# Save the unique pairs and their counts to a new CSV
 write.csv(pair_counts, "pair_counts.csv", row.names = FALSE)
-
-print("CSV created with unique pairs and their counts.")
-# Load the other CSV file
 keyword_pairs_count <- read.csv("keyword_pairs_count.csv")
 
 # Merge the two datasets by the 'Pair' column
 merged_data <- full_join(pair_counts, keyword_pairs_count, by = "Pair")
-
-# Combine Count.x and Count.y into one column called 'Count'
 merged_data <- merged_data %>%
   mutate(Count = coalesce(Count.x, 0) + coalesce(Count.y, 0)) %>%
-  select(-Count.x, -Count.y, -Percentage.x, -Percentage.y)  # Remove old count columns and Percentage
+  select(-Count.x, -Count.y, -Percentage.x, -Percentage.y)  
 
-# Save the final merged data to a new CSV
 write.csv(merged_data, "final_merged_keyword_pair_counts.csv", row.names = FALSE)
 
-print("CSV created with merged counts and without the Percentage column.")
-
-
-
-library(igraph)
-library(dplyr)
-library(tidyr)
-
-results <- read.csv("final_merged_keyword_pair_counts.csv")
-
-keyword_pairs <- results %>%
-  separate(Pair, into = c("Keyword1", "Keyword2"), sep = ", ") %>%
-  mutate(Count = as.integer(Count))
-
-edges <- keyword_pairs %>%
-  select(Keyword1, Keyword2, Count) %>%
-  filter(Keyword1 != Keyword2)
-# Create graph from the data frame
-g <- graph_from_data_frame(edges, directed = FALSE)
-
-# Compute the layout
-layout <- layout_with_fr(g)
-
-low_threshold <- quantile(E(g)$Count, 0.33)  # Lower third
-high_threshold <- quantile(E(g)$Count, 0.67)  # Upper third
-
-# Assign colors based on edge weights
-edge_colors <- ifelse(E(g)$Count <= low_threshold, "gray", 
-                      ifelse(E(g)$Count <= high_threshold, "green", "red"))
-
-# Calculate the number of red and green edges
-red_edges <- sum(edge_colors == "red")
-green_edges <- sum(edge_colors == "green")
-total_edges <- length(E(g)$Count)
-
-# Calculate the percentages
-percentage_red <- (red_edges / total_edges) * 100
-percentage_green <- (green_edges / total_edges) * 100
-
-# Print the percentages
-cat("Percentage of red edges:", percentage_red, "%\n")
-cat("Percentage of green edges:", percentage_green, "%\n")
-# Plot the graph with labels inside nodes
-plot(g, 
-     vertex.size = 15,
-     vertex.label.cex = 0.8,
-     vertex.label.dist = 0,  # Move labels inside the nodes
-     vertex.color = "skyblue",
-     edge.width = E(g)$Count / 10,
-     edge.color = edge_colors,  # Apply color based on edge weight
-     layout = layout,
-     main = "Schizophrenia Co-occurrence Network with Weights Colored by Edge Weight")
-
-global_clustering <- transitivity(g, type = "global")
-print(global_clustering)
-
-local_clustering <- transitivity(g, type = "localaverage")
-print(local_clustering)
-
-# Calculate degree for each node
-node_degrees <- degree(g, mode = "all")  # Use "all" for an undirected graph
-
-community <- cluster_louvain(g)
-
-# Plot the community detection
-plot(community, g)
-
-# Print the symptoms assigned to each community
-community_members <- communities(community)
-for (i in 1:length(community_members)) {
-  cat("\nCommunity", i, "includes symptoms: \n")
-  cat(community_members[[i]], "\n\n")
-}
-transitivity(g, type = "global")
-mean_distance(g, directed = FALSE)
-edge_density(g)
-clusters<-cluster_louvain(g)
-for (i in 1:length(clusters)) {
-  cat("Group", i, ":\n")
-  cat(clusters[[i]], "\n\n")
-}
-# Find the node with the highest degree
-most_significant_node <- names(which.max(node_degrees))
-
-# Print the most significant node and its degree
-cat("The most significant node is:", most_significant_node, "with a degree of", max(node_degrees), "\n")
-
-# Optional: View all nodes and their degrees
-print(node_degrees)
-# Updated keywords and values based on node degrees
-keywords <- c("social_withdrawal", "paranoia", "hallucinations", "addiction", 
-              "emptiness", "depressed", "alcohol", "anger", 
-              "sadness", "abuse", "homicidal_tendencies", "suicide", 
-              "anxiety", "sleep_issues", "genes", "self_harm", 
-              "guilt", "Kid", "Teenager", "Young Adult", "trauma", "meds",
-              "schizophrenia", "poor_academic_perf", "Adult")
-
-values <- c(15, 25, 27, 25, 17, 24, 15, 21, 16, 10, 19, 15, 19, 13, 19, 4, 9, 10, 12, 11, 20, 15, 24, 9, 15)
-
-# Create an edge list
-edges <- unlist(lapply(keywords, function(keyword) c("Degrees", keyword)))
-# Create the graph
-g <- graph_from_edgelist(matrix(edges, ncol = 2, byrow = TRUE), directed = FALSE)
-
-# Set edge weights (values)
-E(g)$weight <- values
-
-# Create a custom layout for the circular structure
-num_nodes <- length(keywords)
-theta <- seq(0, 2*pi, length.out = num_nodes + 1)[-1]  # Angles for the nodes
-layout <- cbind(cos(theta), sin(theta))  # Coordinates for the nodes in a circle
-
-# Adjust layout so that "Degrees" stays at the center
-layout <- rbind(c(0, 0), layout)  # Add "Degrees" at the center
-
-# Plot the graph with labels outside the nodes and smaller nodes
-plot(g, 
-     layout = layout, 
-     vertex.size = 10,  # Make the nodes smaller
-     vertex.label.cex = 0.8,  # Adjust label size
-     vertex.label.dist = 2,  # Move labels outside the nodes (increase the distance)
-     vertex.label.color = "black", 
-     vertex.color = "lightblue",  # Set node color to light blue
-     edge.width = E(g)$weight / 10,  # Adjust edge width based on weight
-     edge.label = E(g)$weight, 
-     edge.label.cex = 0.8, 
-     edge.label.color = "blue", 
-     main = "Degrees - Circular Graph")
 

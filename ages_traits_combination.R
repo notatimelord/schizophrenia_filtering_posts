@@ -8,7 +8,6 @@ library(stringr)
 data <- read.csv("clean.csv")
 colnames(data)[1] <- "clean_csv"
 
-
 keywords <- list(
   depressed = c("depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", 
                 "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", 
@@ -54,21 +53,23 @@ keywords <- list(
                      "voices", "voice", "see things", "god", "devil", "jesus", "derealization", "feels vivid", "feels real",
                      "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucination", "hallucinate",
                      "hallucinations", "dream", "dreams", "wasn't real", "isn't real",  "not real", "seeing silhouettes", "imaginary"),
-  paranoia = c("paranoia", "paranoid", "illusion", "illusions", "delusions", "delusion", "delusional"),
+  paranoia = c("paranoia", "can't trust anyone", "paranoid", "my thoughts aren't my own", "illusion", "illusions", "delusions", "delusion", "delusional"),
   anxiety  = c("anxiety", "anxious", "panic", "panicked", "panic attacks", "heart racing","racing heart", "pound", "pounding"),
   homicidal_tendencies = c("homicidal", "kill", "killing", "killed", "hurt his", "hurt her", "hurt my"),
   genes = c("genetics", "genes", "genetical", "gene", "hereditary"),
   bipolar = c( "bipolar"),
   fear = c("fear", "scared", "afraid", "terrified", "horrified", "fearful"),
   psychosis = c( "psychosis", "psychotic"),
-  schizophrenia = c("schizophrenic", "schizophrenia", "schizoaffective", "schizo", "schizotypical"),
+  schizophrenia = c("schizophrenic", "losing touch with reality", "schizophrenia", "schizoaffective", "schizo", "schizotypical"),
   poor_academic_perf = c("failing", "fail", "failed", "barely passed", "barely graduated", "barely passing", "not passed", "didn't pass", "can't study", "barely finished", "kicked out of the university",
                          "kicked out of university", "kicked out of uni", "kicked out of school", "kicked out of college", "pity passed me", "failed", "never do any work",
                          "i'm behind", "i am behind", "i was behind", "school life was very affected", "school life was affected", "not graduating"),
   trauma = c("PTSD", "trauma", "traumatic", "traumatised", "maltreatment", "suffering", "suffered"),
-  confusion = c("confused", "confusion", "confusing", "puzzled", "dazzled", "disorientation", "disorientated", "uncertain", "uncertainty", "don't know", "can't tell", "fogginess", "like fog", "don't understand",
+  confusion = c("confused", "can't tell what's real", "confusion", "confusing", "puzzled", "dazzled", "disorientation", "disorientated", "uncertain", "uncertainty", "don't know", "can't tell", "fogginess", "like fog", "don't understand",
                 "can't understand", "not understand")
 )
+
+
 
 # turn the keywords list into a vector
 all_keywords <- unlist(keywords)

@@ -70,13 +70,13 @@ keyword_group <- c("hallucinations", "paranoia", "addiction", "schizophrenia",
                    "genes", "bipolar", "sleep issues", "guilt",
                    "poor academics", "self_harm")
 
-values <- c(43, 22, 22, 20, 20, 20, 18, 17, 17, 16, 16, 16, 16, 13, 13, 13, 12, 11, 11, 9, 7, 4)
+values <- c(23, 22, 22, 20, 20, 20, 18, 17, 17, 16, 16, 16, 16, 13, 13, 13, 12, 11, 11, 9, 7, 4)
 calculate_score <- function(input_text) {
   input_text <- tolower(input_text)
-  input_text <- gsub("[[:punct:]]", "", input_text)  # Remove punctuation
-  input_text <- gsub("\\s+", " ", input_text)        # Normalize spaces
+  input_text <- gsub("[[:punct:]]", "", input_text) 
+  input_text <- gsub("\\s+", " ", input_text)        
   
-  # Negation handling
+  # words that if exist before our keywords, the keywords won't be taken into consideration
   negation_words <- c("not", "no", "never", "don't", "doesn't", "didn't", "can't", "won't", "isn't", "aren't")
   negation_pattern <- paste0("\\b(", paste(negation_words, collapse = "|"), ")\\s+\\w+")
   input_text <- gsub(negation_pattern, "", input_text)
@@ -105,31 +105,23 @@ calculate_score <- function(input_text) {
   
   
   if (!any(words %in% tolower(keywords[["schizophrenia"]]))) {
-    total_score <- total_score - 20
+    total_score <- total_score - 10
   }
   
   
   return(list(score = total_score, matched_groups = matched_groups))
 }
 
-# Load data
+
 data <- read.csv("filtered_text.csv", header = FALSE, stringsAsFactors = FALSE)
-colnames(data) <- c("text")  # Assign column name
-str(data)
-
-# Calculate scores for each text entry
+colnames(data) <- c("text")  
 data$scores <- sapply(data$text, function(text) calculate_score(text)$score)
-
-# Filter data for high scores (e.g., scores >= 45)
 filtered_data <- data[data$scores >= 50, ]
 
-# Write filtered data to a CSV file
 write.csv(filtered_data, "filtered_scored_text.csv", row.names = FALSE)
 
-# Calculate percentage of posts with a score >= 45
 total_posts <- nrow(data)
-posts_above_45 <- nrow(filtered_data)
-percentage_above_45 <- (posts_above_45 / total_posts) * 100
+posts_above_50 <- nrow(filtered_data)
+percentage_above_50 <- (posts_above_50 / total_posts) * 100
 
-# Print the percentage
-cat("Percentage of posts with a score >= 45:", round(percentage_above_45, 2), "%\n")
+cat("Percentage of posts with a score >= 50:", round(percentage_above_50, 2), "%\n")

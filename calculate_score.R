@@ -70,22 +70,19 @@ keyword_group <- c("hallucinations", "paranoia", "addiction", "schizophrenia",
                    "genes", "bipolar", "sleep issues", "guilt",
                    "poor academics", "self_harm")
 
-values <- c(23, 22, 22, 20, 20, 20, 18, 17, 17, 16, 16, 16, 16, 13, 13, 13, 12, 11, 11, 9, 7, 4)
+values <- c(43, 22, 22, 20, 20, 20, 18, 17, 17, 16, 16, 16, 16, 13, 13, 13, 12, 11, 11, 9, 7, 4)
 calculate_score <- function(input_text) {
   input_text <- tolower(input_text)
   input_text <- gsub("[[:punct:]]", "", input_text)  # Remove punctuation
+  input_text <- gsub("\\s+", " ", input_text)        # Normalize spaces
   
-  # Remove negated phrases
-  negation_words <- c("not", "no", "not a", "never", "don't", "doesn't", "didn't", "can't", "won't", "isn't", "aren't")
+  # Negation handling
+  negation_words <- c("not", "no", "never", "don't", "doesn't", "didn't", "can't", "won't", "isn't", "aren't")
   negation_pattern <- paste0("\\b(", paste(negation_words, collapse = "|"), ")\\s+\\w+")
-  negated_phrases <- regmatches(input_text, gregexpr(negation_pattern, input_text))[[1]]
-  if (length(negated_phrases) > 0) {
-    for (phrase in negated_phrases) {
-      input_text <- gsub(phrase, "", input_text)
-    }
-  }
+  input_text <- gsub(negation_pattern, "", input_text)
   
   words <- unlist(strsplit(input_text, "\\s+"))  # Split text into words
+  
   total_score <- 0
   matched_groups <- c()
   
@@ -94,41 +91,45 @@ calculate_score <- function(input_text) {
     score <- values[i]
     synonyms <- keywords[[group]]
     
-    exact_matches <- intersect(tolower(words), tolower(synonyms))
-    if (length(exact_matches) > 0) {
+    if (any(words %in% tolower(synonyms))) {
       total_score <- total_score + score
       matched_groups <- c(matched_groups, group)
     }
   }
   
-  # Check if the post contains "schizophrenia" or its synonyms
-  schizophrenia_synonyms <- keywords[["schizophrenia"]]
-  schizophrenia_match <- any(tolower(words) %in% tolower(schizophrenia_synonyms))
+  if ((any(words %in% tolower(keywords[["hallucinations"]])) && 
+       any(words %in% tolower(keywords[["paranoia"]]))) || 
+      (any(words %in% tolower(keywords[["schizophrenia"]])))) {
+    total_score <- total_score + 30
+  }
   
-  if (!schizophrenia_match) {
+  
+  if (!any(words %in% tolower(keywords[["schizophrenia"]]))) {
     total_score <- total_score - 20
   }
   
-  return(total_score)
+  
+  return(list(score = total_score, matched_groups = matched_groups))
 }
 
-# Read data
-data <- read.csv("filtered_text.csv")
-data <- data[!is.na(data$text) & trimws(data$text) != "", ]
+# Load data
+data <- read.csv("filtered_text.csv", header = FALSE, stringsAsFactors = FALSE)
+colnames(data) <- c("text")  # Assign column name
+str(data)
 
-# Calculate scores
-scores <- sapply(data$text, calculate_score)
-data$scores <- scores
+# Calculate scores for each text entry
+data$scores <- sapply(data$text, function(text) calculate_score(text)$score)
 
-# Filter data for high scores
-filtered_data <- data[data$scores >= 45, ]
+# Filter data for high scores (e.g., scores >= 45)
+filtered_data <- data[data$scores >= 50, ]
+
+# Write filtered data to a CSV file
 write.csv(filtered_data, "filtered_scored_text.csv", row.names = FALSE)
 
-# Calculate percentage
+# Calculate percentage of posts with a score >= 45
 total_posts <- nrow(data)
 posts_above_45 <- nrow(filtered_data)
 percentage_above_45 <- (posts_above_45 / total_posts) * 100
 
-cat("Percentage of posts with a score greater than 45:", round(percentage_above_45, 2), "%\n")
-
-
+# Print the percentage
+cat("Percentage of posts with a score >= 45:", round(percentage_above_45, 2), "%\n")

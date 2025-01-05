@@ -1,17 +1,15 @@
-# Load necessary libraries
+
 library(igraph)
 library(stringr)
 library(dplyr)
 library(tidyr)
 
-# Load and clean the data
-data <- read.csv("clean.csv")
 
-# Calculate the total number of posts
+data <- read.csv("clean.csv")
 total_posts <- nrow(data)
 colnames(data)[1] <- "clean_csv"
 
-# Function to extract and validate numbers based on conditions
+
 extract_valid_number <- function(text) {
    pattern <- "\\b(?:a\\s+|an\\s+|was\\s+|at\\s+|around\\s+|age\\s+of\\s+|im\\s+|about\\s+)?(\\d{1,2})(?=(\\s*(?:s|'s|\\s+and\\b|\\s+or\\b|\\s+when\\b|\\s+which\\b|\\s*(?:\\d{1,2}'s|20\\s*s|30\\s*s|40\\s*s|50\\s*s|60\\s*s|70\\s*s|twenty|thirty|forty|fifty|sixty|seventy|twenty\\s+years?))|[\\s\\b]*$))"
   matches <- str_match_all(text, pattern)

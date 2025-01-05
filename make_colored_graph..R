@@ -46,7 +46,7 @@ plot(g,
      edge.width = E(g)$Count / 10,
      edge.color = edge_colors,  
      layout = layout,
-     main = "Schizophrenia Co-occurrence Network with Weights Colored by Edge Weight")
+     main = "")
 
 
 # Calculate global clustering coefficient

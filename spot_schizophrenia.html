@@ -144,18 +144,20 @@ function analyzePost() {
   }
 
   let sanitizedPost = removeNegatedKeywords(post, [].concat(...Object.values(keywords)));
-
+  
   if (
     (containsKeywords(sanitizedPost, keywords.hallucinations) && containsKeywords(sanitizedPost, keywords.paranoia)) ||
     containsKeywords(sanitizedPost, keywords.schizophrenia)
-  ) {
+  ) 
     totalScore += 30;
-  }
-
-  if (!containsKeywords(sanitizedPost, keywords.hallucinations) && !containsKeywords(sanitizedPost, keywords.schizophrenia)) {
+  } else if (!containsKeywords(sanitizedPost, keywords.hallucinations) && !containsKeywords(sanitizedPost, keywords.schizophrenia)) {
     totalScore -= 10;
   }
 
+  if (!containsKeywords(sanitizedPost, keywords.hallucinations)  && !containsKeywords(sanitizedPost, keywords.paranoia) && score>=50)) {
+    totalScore -= 40;
+  }
+  
   for (const [group, keywordsList] of Object.entries(keywords)) {
     if (containsKeywords(sanitizedPost, keywordsList)) {
       totalScore += keywordScores[group] || 0;

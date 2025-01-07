@@ -79,37 +79,37 @@
   </div>
 
   <script>
-  function analyzePost() {
-   const post = document.getElementById("userPost").value.toLowerCase();
-   let totalScore = 0;
+ function analyzePost() {
+        const post = document.getElementById("userPost").value.toLowerCase();
+        let totalScore = 0;
 
-   const keywordScores = {
-     hallucinations: 23,
-     paranoia: 22,
-     addiction: 22,
-     schizophrenia: 20,
-     anger: 20,
-     depressed: 20,
-     "homicidal tendencies": 18,
-     psychosis: 17,
-     fear: 17,
-     anxiety: 16,
-     emptiness: 16,
-     trauma: 16,
-     confusion: 16,
-     alcohol: 13,
-     sadness: 13,
-     suicide: 13,
-     genes: 12,
-     bipolar: 11,
-     "sleep issues": 11,
-     guilt: 9,
-     "poor academics": 7,
-     self_harm: 4
-   };
+        const keywordScores = {
+          hallucinations: 23,
+          paranoia: 22,
+          addiction: 22,
+          schizophrenia: 20,
+          anger: 20,
+          depressed: 20,
+          "homicidal tendencies": 18,
+          psychosis: 17,
+          fear: 17,
+          anxiety: 16,
+          emptiness: 16,
+          trauma: 16,
+          confusion: 16,
+          alcohol: 13,
+          sadness: 13,
+          suicide: 13,
+          genes: 12,
+          bipolar: 11,
+          "sleep issues": 11,
+          guilt: 9,
+          "poor academics": 7,
+          self_harm: 4
+        };
 
-   const keywords = {
-        hallucinations: ["2D-cartoon", "positive symptoms", "cartoon", "cartoonish", "cartoon-ish", "imagination", "fantasy", "imagine", "imaginative", "episode", "abstract", "voices", "voice", "see things", "god", "devil", "jesus", "derealization", "feels vivid", "feels real", "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucinate", "hallucinations", "dream", "dreams", "wasn't real", "isn't real", "not real", "seeing silhouettes", "imaginary"],
+      const keywords = {
+        hallucinations: ["2d-cartoon", "positive symptoms", "cartoon", "cartoonish", "cartoon-ish", "imagination", "fantasy", "imagine", "imaginative", "episode", "abstract", "voices", "voice", "see things", "god", "devil", "jesus", "derealization", "feels vivid", "feels real", "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucinate", "hallucinations", "dream", "dreams", "wasn't real", "isn't real", "not real", "seeing silhouettes", "imaginary"],
         paranoia: ["paranoia", "something wasn't right", "can't trust anyone", "paranoid", "my thoughts aren't my own", "illusion", "illusions", "delusions", "delusion", "delusional"],
         schizophrenia: ["schizophrenic", "losing touch with reality", "schizophrenia", "schizoaffective", "schizo", "schizotypical"],
         depressed: ["depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", "worthlessness", "feeling numb", "sleeping too much", "can't get out of bed", "darker days", "no motivation", "overwhelmed", "disconnection from others", "falling into a hole", "depressed", "depressive", "feeling down", "melancholy", "blue", "disheartened", "sad vibes", "like shit", "emotionally drained", "lost interest", "feeling horrible", "heavy-hearted", "desperate", "desperation", "despair", "apathetic", "apathy", "feel nothing", "cared less"],
@@ -125,44 +125,58 @@
         addiction: ["substances", "substance abuse", "drugs", "drug", "meth", "drug abuse", "pills", "addicted", "dependency", "using", "edibles", "mushrooms", "can't stop", "usage", "chemical dependence", "craving drugs", "pill addiction", "habit I can't break", "LSD", "heroine", "weed"],
         abuse: ["sexual abuse", "physical abuse", "emotional abuse", "abuse in relationships", "domestic violence", "abusive behavior", "manipulative relationships", "control in relationships", "toxic relationships", "self-destructive relationships", "victim of abuse", "trauma from abuse", "coercive control", "abusive", "abused", "abuse", "rape", "raped"],
         anxiety: ["anxiety", "anxious", "panic", "panicked", "panic attacks", "heart racing", "racing heart", "pound", "pounding"],
-        trauma: ["PTSD", "trauma", "traumatic", "traumatised", "maltreatment", "suffering", "suffered"],
+        trauma: ["ptsd", "trauma", "traumatic", "traumatised", "maltreatment", "suffering", "suffered"],
         confusion: ["confused", "can't tell what's real", "confusion", "confusing", "puzzled", "dazzled", "disorientation", "disorientated", "uncertain", "uncertainty", "don't know", "can't tell", "fogginess", "like fog", "don't understand", "can't understand", "not understand"]
-   };
+      };
 
-   function containsKeywords(post, keywordList) {
-     return keywordList.some((keyword) => post.includes(keyword));
-   }
+  const negationWords = ["not", "no", "never", "don't", "doesn't", "didn't", "can't", "won't", "isn't", "aren't"];
+  const negationPattern = new RegExp(`\\b(${negationWords.join("|")})\\s+\\w+`, "g");
 
-   for (const [group, keywordsList] of Object.entries(keywords)) {
-     if (containsKeywords(post, keywordsList)) {
-       totalScore += keywordScores[group] || 0;
-     }
-   }
+  // Function to remove negations that aren't part of keywords
+  function removeNegations(postText) {
+    return postText.replace(negationPattern, (match) => {
+      const isNegationBeforeKeyword = keywords.some(keywordList => {
+        return keywordList.some(keyword => match.includes(keyword));
+      });
+      return isNegationBeforeKeyword ? match : "";
+    });
+  }
 
-   if (
-     (containsKeywords(post, keywords.hallucinations) && containsKeywords(post, keywords.paranoia)) ||
-     containsKeywords(post, keywords.schizophrenia)
-   ) {
-     totalScore += 30;
-   }
+  function containsKeywords(post, keywordList) {
+    return keywordList.some((keyword) => post.includes(keyword));
+  }
 
-   if (!containsKeywords(post, keywords.hallucinations) && !containsKeywords(post, keywords.schizophrenia)) {
-     totalScore -= 10;
-   }
+  let processedPost = removeNegations(post); // Process the post to remove unnecessary negations
 
-   const resultDiv = document.getElementById("result");
-   resultDiv.style.display = "block";
+  for (const [group, keywordsList] of Object.entries(keywords)) {
+    if (containsKeywords(processedPost, keywordsList)) {
+      totalScore += keywordScores[group] || 0;
+    }
+  }
 
-   if (totalScore >= 50) {
-     resultDiv.innerHTML = `<span>Result:</span> The post strongly indicates schizophrenia-related content. (Score: ${totalScore})`;
-   } else if (totalScore > 22) {
-     resultDiv.innerHTML = `<span>Result:</span> The post contains some schizophrenia-related keywords. (Score: ${totalScore})`;
-   } else {
-     resultDiv.innerHTML = `<span>Result:</span> The post does not appear to relate to schizophrenia. (Score: ${totalScore})`;
-   }
+  if (
+    (containsKeywords(processedPost, keywords.hallucinations) && containsKeywords(processedPost, keywords.paranoia)) ||
+    containsKeywords(processedPost, keywords.schizophrenia)
+  ) {
+    totalScore += 30;
+  }
+
+  if (!containsKeywords(processedPost, keywords.hallucinations) && !containsKeywords(processedPost, keywords.schizophrenia)) {
+    totalScore -= 10;
+  }
+
+  const resultDiv = document.getElementById("result");
+  resultDiv.style.display = "block";
+
+  if (totalScore >= 50) {
+    resultDiv.innerHTML = `<span>Result:</span> The post strongly indicates schizophrenia-related content. (Score: ${totalScore})`;
+  } else if (totalScore > 22) {
+    resultDiv.innerHTML = `<span>Result:</span> The post contains some schizophrenia-related keywords. (Score: ${totalScore})`;
+  } else {
+    resultDiv.innerHTML = `<span>Result:</span> The post does not appear to relate to schizophrenia. (Score: ${totalScore})`;
+  }
 }
-
-
-  </script>
+</script>
 </body>
 </html>
+

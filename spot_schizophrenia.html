@@ -146,9 +146,8 @@ function analyzePost() {
   let sanitizedPost = removeNegatedKeywords(post, [].concat(...Object.values(keywords)));
   
   if (
-    (containsKeywords(sanitizedPost, keywords.hallucinations) && containsKeywords(sanitizedPost, keywords.paranoia)) ||
-    containsKeywords(sanitizedPost, keywords.schizophrenia)
-  ) 
+    containsKeywords(sanitizedPost, keywords.hallucinations) && containsKeywords(sanitizedPost, keywords.paranoia)) ||
+    containsKeywords(sanitizedPost, keywords.schizophrenia) ) {
     totalScore += 30;
   } else if (!containsKeywords(sanitizedPost, keywords.hallucinations) && !containsKeywords(sanitizedPost, keywords.schizophrenia)) {
     totalScore -= 10;

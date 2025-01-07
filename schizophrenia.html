@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Schizophrenia Post Analysis</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #4c68d7, #6f86d6);
+      color: #333;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      padding: 20px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    h1 {
+      text-align: center;
+      color: #4c68d7;
+    }
+
+    textarea {
+      width: 100%;
+      height: 150px;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      resize: none;
+    }
+
+    button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      background: #4c68d7;
+      color: white;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 10px;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #6f86d6;
+    }
+
+    .result {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f9f9f9;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .result span {
+      font-weight: bold;
+      color: #4c68d7;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Post Analysis</h1>
+    <p>Enter your post below, and we'll determine if it may relate to schizophrenia.</p>
+    <textarea id="userPost" placeholder="Type your post here..."></textarea>
+    <button onclick="analyzePost()">Analyze Post</button>
+    <div id="result" class="result" style="display: none;"></div>
+  </div>
+
+  <script>
+    const keywords = {
+        hallucinations: ["2D-cartoon", "positive symptoms", "cartoon", "cartoonish", "cartoon-ish", "imagination", "fantasy", "imagine", "imaginative", "episode", "abstract", "voices", "voice", "see things", "god", "devil", "jesus", "derealization", "feels vivid", "feels real", "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucinate", "hallucinations", "dream", "dreams", "wasn't real", "isn't real", "not real", "seeing silhouettes", "imaginary"],
+        paranoia: ["paranoia", "something wasn't right", "can't trust anyone", "paranoid", "my thoughts aren't my own", "illusion", "illusions", "delusions", "delusion", "delusional"],
+        schizophrenia: ["schizophrenic", "losing touch with reality", "schizophrenia", "schizoaffective", "schizo", "schizotypical"],
+        depressed: ["depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", "worthlessness", "feeling numb", "sleeping too much", "can't get out of bed", "darker days", "no motivation", "overwhelmed", "disconnection from others", "falling into a hole", "depressed", "depressive", "feeling down", "melancholy", "blue", "disheartened", "sad vibes", "like shit", "emotionally drained", "lost interest", "feeling horrible", "heavy-hearted", "desperate", "desperation", "despair", "apathetic", "apathy", "feel nothing", "cared less"],
+        sadness: ["sadness", "sorrow", "unhappiness", "grief", "desolation", "misery", "miserable", "crying inside", "tearful", "broken-hearted", "aching heart", "cry", "not happy", "not okay", "crying", "broken", "overwhelmed by sadness", "melancholy", "emotional pain"],
+        sleep_issues: ["insomnia", "sleep problems", "sleep deprived", "can't sleep", "difficulty sleeping", "restless nights", "wide awake", "tossing and turning", "no shut-eye", "broken sleep", "wakeful", "unable to rest", "sleep deprivation", "staring at the ceiling", "sleepless", "fatigue", "tired", "tiredness", "exhausted", "sleepy", "worn out", "drained", "burned out", "lethargic", "dead tired", "can't keep my eyes open", "zapped", "physically done", "mentally done", "run down"],
+        guilt: ["guilt", "guilty", "feel bad", "remorse", "regret", "ashamed", "self-blame", "sorry", "feeling at fault", "full of regret", "blame myself", "can't forgive myself", "feeling responsible"],
+        anger: ["anger", "rage", "angry", "fury", "furious", "hate", "irritated", "annoyed", "resentful", "outraged", "wrath", "boiling inside", "seeing red", "pissed off", "mad", "frustrated", "ready to snap", "lost my temper", "gritting teeth"],
+        emptiness: ["emptiness", "empty", "void", "hollow", "numb", "nothing inside", "lack of purpose", "feeling blank", "soul feels empty", "feeling dead inside", "missing something", "vacant", "meaningless existence", "emotionally void", "disconnected"],
+        self_harm: ["self-harm", "carve", "carved", "burned myself", "hurt myself", "harm myself", "cut myself", "self-injury", "stabbed myself", "self-inflicted pain", "self-destructive", "punish myself", "want to feel pain", "bleeding on purpose", "scarring myself"],
+        suicide: ["suicide", "suicidal thoughts", "it ends", "i will end it", "don't want life", "hate life", "want to end it", "end my life", "no reason to live", "give up on life", "kill myself", "thinking of ending it all", "life's too hard", "wish I was gone", "suicidal", "to die", "hang myself", "hang himself", "hang herself"],
+        social_withdrawal: ["social withdrawal", "no friends", "don't want to go out", "haven't got friends", "alone", "isolated", "avoiding people", "keeping to myself", "stay home alone", "don't want company", "pushed everyone away", "socially distant", "don't feel like talking", "don't fit in", "loneliness", "lonely", "isolation", "want to scream", "feeling alone", "solitude", "can't socialize", "abandoned", "unwanted", "nobody around", "no one cares", "socially invisible", "cut off from everyone", "detached", "feeling friendless", "by myself", "ghosting", "withdraw from", "lonesome", "lonesomeness", "isolate"],
+        alcohol: ["alcohol", "alcoholism", "drink", "drinking problem", "alcoholic", "booze", "liquor", "beer", "whiskey", "wine", "spirits", "intoxicated", "dependence on alcohol", "getting drunk", "wasted", "tipsy", "too much alcohol", "need a drink", "drank", "drunk"],
+        addiction: ["substances", "substance abuse", "drugs", "drug", "meth", "drug abuse", "pills", "addicted", "dependency", "using", "edibles", "mushrooms", "can't stop", "usage", "chemical dependence", "craving drugs", "pill addiction", "habit I can't break", "LSD", "heroine", "weed"],
+        abuse: ["sexual abuse", "physical abuse", "emotional abuse", "abuse in relationships", "domestic violence", "abusive behavior", "manipulative relationships", "control in relationships", "toxic relationships", "self-destructive relationships", "victim of abuse", "trauma from abuse", "coercive control", "abusive", "abused", "abuse", "rape", "raped"],
+        anxiety: ["anxiety", "anxious", "panic", "panicked", "panic attacks", "heart racing", "racing heart", "pound", "pounding"],
+        trauma: ["PTSD", "trauma", "traumatic", "traumatised", "maltreatment", "suffering", "suffered"],
+        confusion: ["confused", "can't tell what's real", "confusion", "confusing", "puzzled", "dazzled", "disorientation", "disorientated", "uncertain", "uncertainty", "don't know", "can't tell", "fogginess", "like fog", "don't understand", "can't understand", "not understand"]
+      };
+
+
+  function analyzePost() {
+   const post = document.getElementById("userPost").value.toLowerCase();
+   let totalScore = 0;
+
+   const keywordScores = {
+     hallucinations: 23,
+     paranoia: 22,
+     addiction: 22,
+     schizophrenia: 20,
+     anger: 20,
+     depressed: 20,
+     "homicidal tendencies": 18,
+     psychosis: 17,
+     fear: 17,
+     anxiety: 16,
+     emptiness: 16,
+     trauma: 16,
+     confusion: 16,
+     alcohol: 13,
+     sadness: 13,
+     suicide: 13,
+     genes: 12,
+     bipolar: 11,
+     "sleep issues": 11,
+     guilt: 9,
+     "poor academics": 7,
+     self_harm: 4
+   };
+
+   const keywords = {
+        hallucinations: ["2D-cartoon", "positive symptoms", "cartoon", "cartoonish", "cartoon-ish", "imagination", "fantasy", "imagine", "imaginative", "episode", "abstract", "voices", "voice", "see things", "god", "devil", "jesus", "derealization", "feels vivid", "feels real", "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucinate", "hallucinations", "dream", "dreams", "wasn't real", "isn't real", "not real", "seeing silhouettes", "imaginary"],
+        paranoia: ["paranoia", "something wasn't right", "can't trust anyone", "paranoid", "my thoughts aren't my own", "illusion", "illusions", "delusions", "delusion", "delusional"],
+        schizophrenia: ["schizophrenic", "losing touch with reality", "schizophrenia", "schizoaffective", "schizo", "schizotypical"],
+        depressed: ["depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", "worthlessness", "feeling numb", "sleeping too much", "can't get out of bed", "darker days", "no motivation", "overwhelmed", "disconnection from others", "falling into a hole", "depressed", "depressive", "feeling down", "melancholy", "blue", "disheartened", "sad vibes", "like shit", "emotionally drained", "lost interest", "feeling horrible", "heavy-hearted", "desperate", "desperation", "despair", "apathetic", "apathy", "feel nothing", "cared less"],
+        sadness: ["sadness", "sorrow", "unhappiness", "grief", "desolation", "misery", "miserable", "crying inside", "tearful", "broken-hearted", "aching heart", "cry", "not happy", "not okay", "crying", "broken", "overwhelmed by sadness", "melancholy", "emotional pain"],
+        sleep_issues: ["insomnia", "sleep problems", "sleep deprived", "can't sleep", "difficulty sleeping", "restless nights", "wide awake", "tossing and turning", "no shut-eye", "broken sleep", "wakeful", "unable to rest", "sleep deprivation", "staring at the ceiling", "sleepless", "fatigue", "tired", "tiredness", "exhausted", "sleepy", "worn out", "drained", "burned out", "lethargic", "dead tired", "can't keep my eyes open", "zapped", "physically done", "mentally done", "run down"],
+        guilt: ["guilt", "guilty", "feel bad", "remorse", "regret", "ashamed", "self-blame", "sorry", "feeling at fault", "full of regret", "blame myself", "can't forgive myself", "feeling responsible"],
+        anger: ["anger", "rage", "angry", "fury", "furious", "hate", "irritated", "annoyed", "resentful", "outraged", "wrath", "boiling inside", "seeing red", "pissed off", "mad", "frustrated", "ready to snap", "lost my temper", "gritting teeth"],
+        emptiness: ["emptiness", "empty", "void", "hollow", "numb", "nothing inside", "lack of purpose", "feeling blank", "soul feels empty", "feeling dead inside", "missing something", "vacant", "meaningless existence", "emotionally void", "disconnected"],
+        self_harm: ["self-harm", "carve", "carved", "burned myself", "hurt myself", "harm myself", "cut myself", "self-injury", "stabbed myself", "self-inflicted pain", "self-destructive", "punish myself", "want to feel pain", "bleeding on purpose", "scarring myself"],
+        suicide: ["suicide", "suicidal thoughts", "it ends", "i will end it", "don't want life", "hate life", "want to end it", "end my life", "no reason to live", "give up on life", "kill myself", "thinking of ending it all", "life's too hard", "wish I was gone", "suicidal", "to die", "hang myself", "hang himself", "hang herself"],
+        social_withdrawal: ["social withdrawal", "no friends", "don't want to go out", "haven't got friends", "alone", "isolated", "avoiding people", "keeping to myself", "stay home alone", "don't want company", "pushed everyone away", "socially distant", "don't feel like talking", "don't fit in", "loneliness", "lonely", "isolation", "want to scream", "feeling alone", "solitude", "can't socialize", "abandoned", "unwanted", "nobody around", "no one cares", "socially invisible", "cut off from everyone", "detached", "feeling friendless", "by myself", "ghosting", "withdraw from", "lonesome", "lonesomeness", "isolate"],
+        alcohol: ["alcohol", "alcoholism", "drink", "drinking problem", "alcoholic", "booze", "liquor", "beer", "whiskey", "wine", "spirits", "intoxicated", "dependence on alcohol", "getting drunk", "wasted", "tipsy", "too much alcohol", "need a drink", "drank", "drunk"],
+        addiction: ["substances", "substance abuse", "drugs", "drug", "meth", "drug abuse", "pills", "addicted", "dependency", "using", "edibles", "mushrooms", "can't stop", "usage", "chemical dependence", "craving drugs", "pill addiction", "habit I can't break", "LSD", "heroine", "weed"],
+        abuse: ["sexual abuse", "physical abuse", "emotional abuse", "abuse in relationships", "domestic violence", "abusive behavior", "manipulative relationships", "control in relationships", "toxic relationships", "self-destructive relationships", "victim of abuse", "trauma from abuse", "coercive control", "abusive", "abused", "abuse", "rape", "raped"],
+        anxiety: ["anxiety", "anxious", "panic", "panicked", "panic attacks", "heart racing", "racing heart", "pound", "pounding"],
+        trauma: ["PTSD", "trauma", "traumatic", "traumatised", "maltreatment", "suffering", "suffered"],
+        confusion: ["confused", "can't tell what's real", "confusion", "confusing", "puzzled", "dazzled", "disorientation", "disorientated", "uncertain", "uncertainty", "don't know", "can't tell", "fogginess", "like fog", "don't understand", "can't understand", "not understand"]
+   };
+
+   function containsKeywords(post, keywordList) {
+     return keywordList.some((keyword) => post.includes(keyword));
+   }
+
+   for (const [group, keywordsList] of Object.entries(keywords)) {
+     if (containsKeywords(post, keywordsList)) {
+       totalScore += keywordScores[group] || 0;
+     }
+   }
+
+   if (
+     (containsKeywords(post, keywords.hallucinations) && containsKeywords(post, keywords.paranoia)) ||
+     containsKeywords(post, keywords.schizophrenia)
+   ) {
+     totalScore += 30;
+   }
+
+   if (!containsKeywords(post, keywords.hallucinations) && !containsKeywords(post, keywords.schizophrenia)) {
+     totalScore -= 10;
+   }
+
+   const resultDiv = document.getElementById("result");
+   resultDiv.style.display = "block";
+
+   if (totalScore >= 50) {
+     resultDiv.innerHTML = `<span>Result:</span> The post strongly indicates schizophrenia-related content. (Score: ${totalScore})`;
+   } else if (totalScore > 22) {
+     resultDiv.innerHTML = `<span>Result:</span> The post contains some schizophrenia-related keywords. (Score: ${totalScore})`;
+   } else {
+     resultDiv.innerHTML = `<span>Result:</span> The post does not appear to relate to schizophrenia. (Score: ${totalScore})`;
+   }
+}
+
+
+  </script>
+</body>
+</html>

@@ -97,7 +97,11 @@ calculate_score <- function(input_text) {
     total_score <- total_score + 30
   }
   
-  
+  if (score>=50 && (!any(words %in% tolower(keywords[["hallucinations"]])) && 
+       any(!words %in% tolower(keywords[["paranoia"]]))) || 
+      (!any(words %in% tolower(keywords[["schizophrenia"]])))) {
+    total_score <- total_score - 30
+  }
   if (!any(words %in% tolower(keywords[["schizophrenia"]]))) {
     total_score <- total_score - 10
   }
@@ -107,7 +111,7 @@ calculate_score <- function(input_text) {
 }
 
 
-data <- read.csv("filtered_text.csv", header = FALSE, stringsAsFactors = FALSE)
+data <- read.csv("d.csv", header = FALSE, stringsAsFactors = FALSE)
 colnames(data) <- c("text")  
 data$scores <- sapply(data$text, function(text) calculate_score(text)$score)
 filtered_data <- data[data$scores >= 50, ]
@@ -115,6 +119,7 @@ filtered_data <- data[data$scores >= 50, ]
 write.csv(filtered_data, "filtered_scored_text.csv", row.names = FALSE)
 
 total_posts <- nrow(data)
+print(total_posts)
 posts_above_50 <- nrow(filtered_data)
 percentage_above_50 <- (posts_above_50 / total_posts) * 100
 

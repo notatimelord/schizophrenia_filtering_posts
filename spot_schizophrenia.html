@@ -79,6 +79,46 @@
   </div>
 
   <script>
+      
+function extractValidNumber(text) {
+    const pattern = /\b(?:a\s+|an\s+|was\s+|at\s+|around\s+|age\s+of\s+|im\s+|about\s+)?(\d{1,2})(?=(\s*(?:s|'s|\s+and\b|\s+or\b|\s+when\b|\s+which\b|\s*(?:\d{1,2}'s|20\s*s|30\s*s|40\s*s|50\s*s|60\s*s|70\s*s|twenty|thirty|forty|fifty|sixty|seventy|twenty\s+years?|(?:\d{1,2}\s+years?\s+old)))|[\s\b]*$))/gi;
+    
+    let matches = [...text.matchAll(pattern)];
+    let numbers = matches.map(match => parseInt(match[1], 10)).filter(num => !isNaN(num));
+    
+    return numbers.length > 0 ? numbers : null;
+}
+
+function classifyAgeGroupFromKeywords(text) {
+    let ageWordPatterns = {
+        "Kid": ["kid", "child", "childhood", "primary school"],
+        "Teenager": ["teen", "teenager", "adolescent", "adolescence", "student", "school", "highschool"],
+        "Young Adult": ["college", "uni", "university", "young adult"],
+        "Adult": ["adult", "adulthood"]
+    };
+    
+    let exclusionConditions = ["graduated", "passed", "failed"];
+
+    for (let ageGroup in ageWordPatterns) {
+        for (let keyword of ageWordPatterns[ageGroup]) {
+            if (text.toLowerCase().includes(keyword) && !exclusionConditions.some(exc => text.toLowerCase().includes(exc))) {
+                return ageGroup === "Kid" ? 10 :
+                       ageGroup === "Teenager" ? 15 :
+                       ageGroup === "Young Adult" ? 20 : 30;
+            }
+        }
+    }
+    return null;
+}
+
+function classifyAgeGroup(num) {
+    if (num > 4 && num < 13) return "Kid";
+    if (num >= 13 && num <= 17) return "Teenager";
+    if (num >= 18 && num <= 24) return "Young Adult";
+    if (num >= 25 && num <= 100) return "Adult";
+    return null;
+}
+
 function analyzePost() {
   const post = document.getElementById("userPost").value.toLowerCase();
   let totalScore = 0;
@@ -111,30 +151,30 @@ function analyzePost() {
   };
 
   const keywords = {
-        hallucinations: ["2d-cartoon", "positive symptoms", "cartoon", "cartoonish", "cartoon-ish", "imagination", "fantasy", "imagine", "imaginative", "episode", "abstract", "voices", "voice", "see things", "god", "devil", "jesus", "derealization", "feels vivid", "feels real", "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucinate", "hallucinations", "dream", "dreams", "wasn't real", "isn't real", "not real", "seeing silhouettes", "imaginary"],
-        paranoia: ["paranoia", "something wasn't right", "can't trust anyone", "paranoid", "my thoughts aren't my own", "illusion", "illusions", "delusions", "delusion", "delusional"],
-        schizophrenia: ["schizophrenic", "losing touch with reality", "schizophrenia", "schizoaffective", "schizo", "schizotypical"],
-        depressed: ["depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", "worthlessness", "feeling numb", "sleeping too much", "can't get out of bed", "darker days", "no motivation", "overwhelmed", "disconnection from others", "falling into a hole", "depressed", "depressive", "feeling down", "melancholy", "blue", "disheartened", "sad vibes", "like shit", "emotionally drained", "lost interest", "feeling horrible", "heavy-hearted", "desperate", "desperation", "despair", "apathetic", "apathy", "feel nothing", "cared less"],
-        sadness: ["sadness", "sorrow", "unhappiness", "grief", "desolation", "misery", "miserable", "crying inside", "tearful", "broken-hearted", "aching heart", "cry", "not happy", "not okay", "crying", "broken", "overwhelmed by sadness", "melancholy", "emotional pain"],
-        sleep_issues: ["insomnia", "sleep problems", "sleep deprived", "can't sleep", "difficulty sleeping", "restless nights", "wide awake", "tossing and turning", "no shut-eye", "broken sleep", "wakeful", "unable to rest", "sleep deprivation", "staring at the ceiling", "sleepless", "fatigue", "tired", "tiredness", "exhausted", "sleepy", "worn out", "drained", "burned out", "lethargic", "dead tired", "can't keep my eyes open", "zapped", "physically done", "mentally done", "run down"],
-        guilt: ["guilt", "guilty", "feel bad", "remorse", "regret", "ashamed", "self-blame", "sorry", "feeling at fault", "full of regret", "blame myself", "can't forgive myself", "feeling responsible"],
-        anger: ["anger", "rage", "angry", "fury", "furious", "hate", "irritated", "annoyed", "resentful", "outraged", "wrath", "boiling inside", "seeing red", "pissed off", "mad", "frustrated", "ready to snap", "lost my temper", "gritting teeth"],
-        emptiness: ["emptiness", "empty", "void", "hollow", "numb", "nothing inside", "lack of purpose", "feeling blank", "soul feels empty", "feeling dead inside", "missing something", "vacant", "meaningless existence", "emotionally void", "disconnected"],
-        self_harm: ["self-harm", "carve", "carved", "burned myself", "hurt myself", "harm myself", "cut myself", "self-injury", "stabbed myself", "self-inflicted pain", "self-destructive", "punish myself", "want to feel pain", "bleeding on purpose", "scarring myself"],
-        suicide: ["suicide", "suicidal thoughts", "it ends", "i will end it", "don't want life", "hate life", "want to end it", "end my life", "no reason to live", "give up on life", "kill myself", "thinking of ending it all", "life's too hard", "wish I was gone", "suicidal", "to die", "hang myself", "hang himself", "hang herself"],
-        social_withdrawal: ["social withdrawal", "no friends", "don't want to go out", "haven't got friends", "alone", "isolated", "avoiding people", "keeping to myself", "stay home alone", "don't want company", "pushed everyone away", "socially distant", "don't feel like talking", "don't fit in", "loneliness", "lonely", "isolation", "want to scream", "feeling alone", "solitude", "can't socialize", "abandoned", "unwanted", "nobody around", "no one cares", "socially invisible", "cut off from everyone", "detached", "feeling friendless", "by myself", "ghosting", "withdraw from", "lonesome", "lonesomeness", "isolate"],
-        alcohol: ["alcohol", "alcoholism", "drink", "drinking problem", "alcoholic", "booze", "liquor", "beer", "whiskey", "wine", "spirits", "intoxicated", "dependence on alcohol", "getting drunk", "wasted", "tipsy", "too much alcohol", "need a drink", "drank", "drunk"],
-        addiction: ["substances", "substance abuse", "drugs", "drug", "meth", "drug abuse", "pills", "addicted", "dependency", "using", "edibles", "mushrooms", "can't stop", "usage", "chemical dependence", "craving drugs", "pill addiction", "habit I can't break", "LSD", "heroine", "weed"],
-        abuse: ["sexual abuse", "physical abuse", "emotional abuse", "abuse in relationships", "domestic violence", "abusive behavior", "manipulative relationships", "control in relationships", "toxic relationships", "self-destructive relationships", "victim of abuse", "trauma from abuse", "coercive control", "abusive", "abused", "abuse", "rape", "raped"],
-        anxiety: ["anxiety", "anxious", "panic", "panicked", "panic attacks", "heart racing", "racing heart", "pound", "pounding"],
-        trauma: ["ptsd", "trauma", "traumatic", "traumatised", "maltreatment", "suffering", "suffered"],
-        confusion: ["confused", "can't tell what's real", "confusion", "confusing", "puzzled", "dazzled", "disorientation", "disorientated", "uncertain", "uncertainty", "don't know", "can't tell", "fogginess", "like fog", "don't understand", "can't understand", "not understand"]
-      };
+    hallucinations: ["2d-cartoon", "positive symptoms", "cartoon", "cartoonish", "cartoon-ish", "imagination", "fantasy", "imagine", "imaginative", "episode", "abstract", "voices", "voice", "see things", "god", "devil", "jesus", "derealization", "feels vivid", "feels real", "music", "musical", "songs", "hear noise", "hearing things", "seeing things", "demons", "demon", "hallucination", "hallucinate", "hallucinations", "dream", "dreams", "wasn't real", "isn't real", "not real", "seeing silhouettes", "imaginary"],
+    paranoia: ["paranoia", "something wasn't right", "can't trust anyone", "paranoid", "my thoughts aren't my own", "illusion", "illusions", "delusions", "delusion", "delusional"],
+    schizophrenia: ["schizophrenic", "losing touch with reality", "schizophrenia", "schizoaffective", "schizo", "schizotypical"],
+    depressed: ["depression", "depressive episode", "low mood", "sadness", "hopelessness", "feeling like failure", "loss of interest", "lethargy", "slow thinking", "fatigue", "no energy", "crying spells", "feeling empty", "worthlessness", "feeling numb", "sleeping too much", "can't get out of bed", "darker days", "no motivation", "overwhelmed", "disconnection from others", "falling into a hole", "depressed", "depressive", "feeling down", "melancholy", "blue", "disheartened", "sad vibes", "like shit", "emotionally drained", "lost interest", "feeling horrible", "heavy-hearted", "desperate", "desperation", "despair", "apathetic", "apathy", "feel nothing", "cared less"],
+    sadness: ["sadness", "sorrow", "unhappiness", "grief", "desolation", "misery", "miserable", "crying inside", "tearful", "broken-hearted", "aching heart", "cry", "not happy", "not okay", "crying", "broken", "overwhelmed by sadness", "melancholy", "emotional pain"],
+    sleep_issues: ["insomnia", "sleep problems", "sleep deprived", "can't sleep", "difficulty sleeping", "restless nights", "wide awake", "tossing and turning", "no shut-eye", "broken sleep", "wakeful", "unable to rest", "sleep deprivation", "staring at the ceiling", "sleepless", "fatigue", "tired", "tiredness", "exhausted", "sleepy", "worn out", "drained", "burned out", "lethargic", "dead tired", "can't keep my eyes open", "zapped", "physically done", "mentally done", "run down"],
+    guilt: ["guilt", "guilty", "feel bad", "remorse", "regret", "ashamed", "self-blame", "sorry", "feeling at fault", "full of regret", "blame myself", "can't forgive myself", "feeling responsible"],
+    anger: ["anger", "rage", "angry", "fury", "furious", "hate", "irritated", "annoyed", "resentful", "outraged", "wrath", "boiling inside", "seeing red", "pissed off", "mad", "frustrated", "ready to snap", "lost my temper", "gritting teeth"],
+    emptiness: ["emptiness", "empty", "void", "hollow", "numb", "nothing inside", "lack of purpose", "feeling blank", "soul feels empty", "feeling dead inside", "missing something", "vacant", "meaningless existence", "emotionally void", "disconnected"],
+    self_harm: ["self-harm", "carve", "carved", "burned myself", "hurt myself", "harm myself", "cut myself", "self-injury", "stabbed myself", "self-inflicted pain", "self-destructive", "punish myself", "want to feel pain", "bleeding on purpose", "scarring myself"],
+    suicide: ["suicide", "suicidal thoughts", "it ends", "i will end it", "don't want life", "hate life", "want to end it", "end my life", "no reason to live", "give up on life", "kill myself", "thinking of ending it all", "life's too hard", "wish I was gone", "suicidal", "to die", "hang myself", "hang himself", "hang herself"],
+    social_withdrawal: ["social withdrawal", "no friends", "don't want to go out", "haven't got friends", "alone", "isolated", "avoiding people", "keeping to myself", "stay home alone", "don't want company", "pushed everyone away", "socially distant", "don't feel like talking", "don't fit in", "loneliness", "lonely", "isolation", "want to scream", "feeling alone", "solitude", "can't socialize", "abandoned", "unwanted", "nobody around", "no one cares", "socially invisible", "cut off from everyone", "detached", "feeling friendless", "by myself", "ghosting", "withdraw from", "lonesome", "lonesomeness", "isolate"],
+    alcohol: ["alcohol", "alcoholism", "drink", "drinking problem", "alcoholic", "booze", "liquor", "beer", "whiskey", "wine", "spirits", "intoxicated", "dependence on alcohol", "getting drunk", "wasted", "tipsy", "too much alcohol", "need a drink", "drank", "drunk"],
+    addiction: ["substances", "substance abuse", "drugs", "drug", "meth", "drug abuse", "pills", "addicted", "dependency", "using", "edibles", "mushrooms", "can't stop", "usage", "chemical dependence", "craving drugs", "pill addiction", "habit I can't break", "LSD", "heroine", "weed"],
+    abuse: ["sexual abuse", "physical abuse", "emotional abuse", "abuse in relationships", "domestic violence", "abusive behavior", "manipulative relationships", "control in relationships", "toxic relationships", "self-destructive relationships", "victim of abuse", "trauma from abuse", "coercive control", "abusive", "abused", "abuse", "rape", "raped"],
+    anxiety: ["anxiety", "anxious", "panic", "panicked", "panic attacks", "heart racing", "racing heart", "pound", "pounding"],
+    trauma: ["ptsd", "trauma", "traumatic", "traumatised", "maltreatment", "suffering", "suffered"],
+    confusion: ["confused", "can't tell what's real", "confusion", "confusing", "puzzled", "dazzled", "disorientation", "disorientated", "uncertain", "uncertainty", "don't know", "can't tell", "fogginess", "like fog", "don't understand", "can't understand", "not understand"]
+  };
 
   function containsKeywords(post, keywordList) {
     return keywordList.some((keyword) => post.includes(keyword));
   }
-
+  
   function removeNegatedKeywords(post, keywordList) {
     let modifiedPost = post;
     keywordList.forEach((keyword) => {
@@ -148,6 +188,17 @@ function analyzePost() {
 
   let sanitizedPost = removeNegatedKeywords(post, [].concat(...Object.values(keywords)));
 
+  let onsetGroup = null;
+  const extractedNumbers = extractValidNumber(post);
+  if (extractedNumbers && extractedNumbers.length > 0) {
+    onsetGroup = classifyAgeGroup(extractedNumbers[0]);
+  } else {
+    const keywordAge = classifyAgeGroupFromKeywords(post);
+    if (keywordAge !== null) {
+      onsetGroup = classifyAgeGroup(keywordAge);
+    }
+  }
+
   if (
     (containsKeywords(sanitizedPost, keywords.hallucinations) && containsKeywords(sanitizedPost, keywords.paranoia)) ||
     containsKeywords(sanitizedPost, keywords.schizophrenia)
@@ -157,8 +208,8 @@ function analyzePost() {
 
   if (!containsKeywords(sanitizedPost, keywords.hallucinations) && !containsKeywords(sanitizedPost, keywords.schizophrenia)) {
     totalScore -= 10;
-  } else if (!containsKeywords(sanitizedPost, keywords.hallucinations) && !containsKeywords(sanitizedPost, keywords.schizophrenia) && !containsKeywords(sanitizedPost, keywords.paranoia)  && score>=50){
-    totalScore -=40;
+  } else if (!containsKeywords(sanitizedPost, keywords.hallucinations) && !containsKeywords(sanitizedPost, keywords.schizophrenia) && !containsKeywords(sanitizedPost, keywords.paranoia)  && totalScore >= 50){
+    totalScore -= 40;
   }
   
   for (const [group, keywordsList] of Object.entries(keywords)) {
@@ -166,18 +217,24 @@ function analyzePost() {
       totalScore += keywordScores[group] || 0;
     }
   }
-
+  
   const resultDiv = document.getElementById("result");
   resultDiv.style.display = "block";
+  
+  if (totalScore <=22){
+      onsetGroup = null;
+  }
+  let onsetText = onsetGroup ? `<br><span>Onset:</span> ${onsetGroup}` : '';
 
   if (totalScore >= 50) {
-    resultDiv.innerHTML = `<span>Result:</span> The post strongly indicates schizophrenia-related content. (Score: ${totalScore})`;
+    resultDiv.innerHTML = `<span>Result:</span> The post strongly indicates schizophrenia-related content. (Score: ${totalScore})${onsetText}`;
   } else if (totalScore > 22) {
-    resultDiv.innerHTML = `<span>Result:</span> The post contains some schizophrenia-related keywords. (Score: ${totalScore})`;
+    resultDiv.innerHTML = `<span>Result:</span> The post contains some schizophrenia-related keywords. (Score: ${totalScore})${onsetText}`;
   } else {
-    resultDiv.innerHTML = `<span>Result:</span> The post does not appear to relate to schizophrenia. (Score: ${totalScore})`;
+    resultDiv.innerHTML = `<span>Result:</span> The post does not appear to relate to schizophrenia. (Score: ${totalScore})${onsetText}`;
   }
 }
+
 
 </script>
 </body>
